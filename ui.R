@@ -1,0 +1,139 @@
+library(shiny)
+library(shinyjs)
+library(shinythemes)
+library(ggbeeswarm)
+
+library(shinyBS)
+library(shinycssloaders)
+library(shinyWidgets)
+library(shinythemes)
+
+source("helper_functions.oncoplot.R")
+source("helper_functions.shiny.R")
+
+# library(DT)
+# dataset <- diamonds
+# Define UI for data upload app ----
+shinyUI(
+  navbarPage(theme = shinytheme("flatly"),windowTitle="MafViz", selected="Upload and Filter",
+             title="MafWiz", id="main_tabs",
+             useShinyjs(),
+             tabPanel("Upload and Filter",
+                      h1("Select a MAF file"),
+                      tags$hr(),
+                      fluidRow(
+                        column(5,
+                               h4("Use your own data"),
+                              actionLink("clear_maf_file", "Reset",
+                                         style="color: #cccccc; font-size: 10spx;"),
+                              fileInput("maf_file_upload", "Upload MAF file",
+                                        multiple = FALSE,
+                                        accept = c("text",".maf",".txt")),
+                              actionLink("load_example_data", "Use example data (TCGA-CHOL)",
+                                         style="color: #0000ff; font-size: 12spx;"),
+                               
+                        ),
+                        column(5, #offset = 1,
+                               h4("Use TCGA data"),
+                               selectizeInput("tcga_dataset", "TCGA Dataset",
+                                           choices=TCGA_project_choices),
+                               # tags$style(type='text/css', ".selectize-input { font-size: 12px; line-height: 20px;}"),
+                               selectInput("tcga_pipeline", "Variant Calling Pipeline",
+                                            choices=TCGA_pipeline_choices, selected="mutect2",
+                                            selectize = F),
+                               actionButton("get_tcga_data","Download"),
+                        )
+                      ),
+                      tags$br(),
+                      tags$br(),
+                      tags$hr(),
+                      h3("Apply filters"),
+                      disabled(
+                        checkboxInput("apply_filters", "Filter MAF file?", FALSE)
+                      ),
+                      tags$hr(),
+                      h3("Add Sample Information"),
+                      disabled(
+                        fileInput("sample_file_upload", "Choose file",
+                                  multiple = FALSE,
+                                  accept = c("text",".txt",".xlsx",".xls",".csv"))
+                      )
+              ),
+             
+             tabPanel("Visualizations",
+                      tabsetPanel(id = "viz_panel", type="pills",
+                                  tabPanel("Mutation Burden",
+                                           tags$hr(),
+                                           sidebarPanel("", width=3,
+                                              radioButtons("burden_plot_type",label = "Type of plot", 
+                                                           choices = c("Barplot", "Dotplot"))
+                                           ),
+                                           mainPanel(
+                                             withSpinner(plotOutput("burden_output", width = "90%", height = "600px", click = NULL,
+                                                                    dblclick = NULL, hover = NULL, hoverDelay = NULL,
+                                                                    hoverDelayType = NULL, brush = NULL, clickId = NULL,
+                                                                    hoverId = NULL, inline = FALSE), type=1),
+                                             tags$hr(),
+                                             downloadButton("download_burdenplot_button",label="Download plot"),
+                                             bsModal("download_burdenplot_modal","Download plot","download_burdenplot_button",
+                                                     radioButtons("burdenplot_save_type","Format",c("pdf","png","tiff","svg"),selected="pdf"),
+                                                     numericInput("burdenplot_save_width", "Width (in)",value=8, min=2, max=50, step=0.5),
+                                                     numericInput("burdenplot_save_height", "Height (in)",value=8, min=2, max=50, step=0.5),
+                                                     downloadButton("download_burdenplot","Download"))
+                                           )
+                                  ),
+                                  tabPanel("Oncoplot",
+                                           tags$hr(),
+                                           # sidebarPanel("Plot Options", width=2),
+                                           mainPanel(
+                                             tags$hr(),
+                                             # withSpinner(plotOutput("oncoplot_output"),type=1),
+                                             tabsetPanel(id = "viz_panel", type="tabs",
+                                              tabPanel("Plot",
+                                                       withSpinner(plotOutput("oncoplot_output"),type=1)
+                                              ),
+                                              tabPanel("Options",
+                                                       # p("Plot Options"),
+                                                       numericInput("onco_cohort_frac","Plot genes with mutation in fraction of cohort",
+                                                                    value=0.05, min=0, max=1, step=0.01)
+                                              )
+                                             ),
+                                              
+                                             tags$hr(),
+                                             downloadButton("download_oncoplot_button",label="Download plot"),
+                                             bsModal("download_oncoplot_modal","Download plot","download_oncoplot_button",
+                                                     radioButtons("oncoplot_save_type","Format",c("pdf"),selected="pdf"),
+                                                     numericInput("oncoplot_save_width", "Width (in)",value=8, min=2, max=50, step=0.5),
+                                                     numericInput("oncoplot_save_height", "Height (in)",value=8, min=2, max=50, step=0.5),
+                                                     downloadButton("download_oncoplot","Download"))
+                                           )
+                                  ),
+                                  tabPanel("Mutational Signatures",
+                                           sidebarPanel("", width=3,
+                                                        # selectInput("genome_select",label="Genome Build",choices=c(NULL,"hg19","hg38")),selectize=F,
+                                                        checkboxInput("use_syn_mut", "Use Synonymous Mutations?", FALSE)
+                                           ),
+                                           mainPanel(
+                                             withSpinner(plotOutput("mutsig_output", width = "90%", height = "600px", click = NULL,
+                                                                    dblclick = NULL, hover = NULL, hoverDelay = NULL,
+                                                                    hoverDelayType = NULL, brush = NULL, clickId = NULL,
+                                                                    hoverId = NULL, inline = FALSE), type=1),
+                                             tags$hr(),
+                                             downloadButton("download_mutsigplot_button",label="Download plot"),
+                                             bsModal("download_mutsigplot_modal","Download plot","download_mutsigplot_button",
+                                                     radioButtons("mutsigplot_save_type","Format",c("pdf"),selected="pdf"),
+                                                     numericInput("mutsigplot_save_width", "Width (in)",value=8, min=2, max=50, step=0.5),
+                                                     numericInput("mutsigplot_save_height", "Height (in)",value=8, min=2, max=50, step=0.5),
+                                                     downloadButton("download_mutsigplot","Download"))
+                                           )
+                                  )
+                      )
+             ),
+             tabPanel("Table Output",
+                      p("Nothing here yet")
+             ),
+             navbarMenu("More",
+                        tabPanel("Stuff to add in the future",
+                                 p("-- Launch MutSigCV?")))
+  )
+)
