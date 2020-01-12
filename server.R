@@ -61,7 +61,7 @@ shinyServer(function(input, output, session) {
     req(input$maf_file_upload)
     myfile_path <- input$maf_file_upload$datapath
     # file_extension <- tools::file_ext(myfile_path)
-    plot_values$maf_obj <- read_maf(session=session, maf_file)
+    plot_values$maf_obj <- read_maf(session=session, myfile_path)
     
     updateTabsetPanel(session, "main_tabs", 
                       selected = "Visualizations")
