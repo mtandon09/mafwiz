@@ -12,6 +12,9 @@ filter_maf <- function(maf_file, flag_genes="default",save_name=NULL,no_filter=F
   }
   maf_df.raw <- read.table(maf_file, sep="\t", header=T, fill = T, quote="\"", stringsAsFactors = F)
   maf_df.raw <- maf_df.raw[maf_df.raw$Hugo_Symbol != "Hugo_Symbol",]
+  filter_genes=!maf_df.raw$Hugo_Symbol %in% flag_genes
+  maf_df.raw <- maf_df.raw[filter_genes,]
+  
   
   if (!"tumor_freq" %in% colnames(maf_df.raw)) {
     maf_df.raw$tumor_freq <- as.numeric(maf_df.raw$t_alt_count)/as.numeric(maf_df.raw$t_depth)
@@ -23,7 +26,7 @@ filter_maf <- function(maf_file, flag_genes="default",save_name=NULL,no_filter=F
   filter_tumor_depth=rep(TRUE,nrow(maf_df.raw))
   filter_norm_alt=rep(TRUE,nrow(maf_df.raw))
   filter_tumor_alt=rep(TRUE,nrow(maf_df.raw))
-  filter_genes=rep(TRUE,nrow(maf_df.raw))
+  # filter_genes=rep(TRUE,nrow(maf_df.raw))
   filter_pop_freq=rep(TRUE,nrow(maf_df.raw))
   
   if (!no_filter) {
@@ -36,7 +39,6 @@ filter_maf <- function(maf_file, flag_genes="default",save_name=NULL,no_filter=F
     if (! is.null(t_alt_min)){
       filter_tumor_alt <- filter_tumor_alt & maf_df.raw$t_alt_count > t_alt_min
     }
-    filter_genes=!maf_df.raw$Hugo_Symbol %in% flag_genes
     filter_pop_freq=(maf_df.raw$gnomAD_AF %in% c("-","") | is.na(maf_df.raw$gnomAD_AF) | as.numeric(maf_df.raw$gnomAD_AF) < min(gnomAD_AF_max,1)) & 
                     (maf_df.raw$AF %in% c("-","") | is.na(maf_df.raw$AF)  | as.numeric(maf_df.raw$AF) < min(AF_max,1)) &
                     (maf_df.raw$ExAC_AF %in% c("-","") | is.na(maf_df.raw$ExAC_AF) | as.numeric(maf_df.raw$ExAC_AF) < min(ExAC_AF_max,1))
@@ -58,7 +60,7 @@ filter_maf <- function(maf_file, flag_genes="default",save_name=NULL,no_filter=F
   # maf_df.raw <- maf_df.raw[filter_genes &filter_norm_alt & filter_tumor_alt & filter_pop_freq & filter_caller,]
   maf_df.rawest <- maf_df.raw
   # maf_df.raw <- maf_df.rawest
-  maf_df.raw <- maf_df.raw[filter_tumor_depth & filter_norm_alt & filter_tumor_alt & filter_genes & filter_pop_freq & filter_caller,]
+  maf_df.raw <- maf_df.raw[filter_tumor_depth & filter_norm_alt & filter_tumor_alt & filter_pop_freq & filter_caller,]
   # browser()
   maf_df.raw <- maf_df.raw[rowSums(is.na(maf_df.raw))!=ncol(maf_df.raw),]
   # maf_df.raw <- maf_df.raw[rowSums(apply(maf_df.raw,1,is.na)]
@@ -216,6 +218,11 @@ make_burden_plot <- function(maf.filtered, plotType="Barplot") {
   
   
   if (plotType=="Barplot") {
+    if (length(unique(plotdata$Tumor_Sample_Barcode)) <= 20) {
+      xaxis_text <- element_text(angle=30, hjust=1)
+    } else {
+      xaxis_text <- element_blank()
+    }
     burden_plot <- ggplot(plotdata, aes(x=Tumor_Sample_Barcode, y=mut_burden)) +
       geom_bar(aes(fill=classification), stat="identity",width=1,size=0.3, color="black") +
       scale_fill_manual(values=my_class_colors) +
@@ -223,7 +230,8 @@ make_burden_plot <- function(maf.filtered, plotType="Barplot") {
       xlab("") + ylab("Mutations") +
       geom_hline(data = median_mut_burdens, aes(yintercept=median),linetype="dashed", color="grey60") +
       theme(
-        axis.text.x = element_text(angle=30, hjust=1),
+        axis.text.x = xaxis_text,
+        # axis.text.x = element_text(angle=30, hjust=1),
         # axis.text.x = element_blank(),
         # axis.ticks.x = element_blank(),
         legend.position = "right",
@@ -267,6 +275,123 @@ make_burden_plot <- function(maf.filtered, plotType="Barplot") {
   }
   return(burden_plot)
   
+}
+
+
+
+make_single_ribbon_plot <- function(my_maf, onco_genes=NULL, topN=25, 
+                                      save_name=NULL, 
+                                      ribbon_color=NULL, 
+                                      pval_low=0.05, pval_high=0.1,
+                                      plot_frac_mut_axis=TRUE,
+                                      # plot_file="maftools_somaticInteractions.pdf",
+                                      plot_file="maftools_somaticInteractions.png",
+                                      progress_func=NULL,
+                                      scale_ribbon_to_fracmut=TRUE) {
+    if (!is.null(save_name)) {
+      if (! dir.exists(dirname(save_name))) {
+        dir.create(dirname(save_name))
+      }
+      # plot_file <- gsub(".pdf",".interactions.pdf",save_name)
+      # pdf(file = plot_file,height=5,width=5)
+    }
+    if (is.function(progress_func)) {
+      progress_func(value=10, detail = "Running maftools' somaticInteractions()")
+    }
+  
+    
+    # pdf(file = plot_file,height=5,width=5)
+    if (file.exists(plot_file)) {file.remove(plot_file)}
+    # png(file = plot_file,height=4,width=4, units="in", res=200)
+    png(file = plot_file,height=480,width=480)
+    som_int <-  somaticInteractions(maf = my_maf, top=topN, genes=onco_genes, pvalue = c(pval_low, pval_high), kMax=5,findPathways=F)
+    dev.off()
+
+    
+    if (is.function(progress_func)) {
+      progress_func(value=50, detail = "Collecting co-occurence data...")
+    }
+    cooccur_data <- som_int$pairs
+    cooccur_data$pair_string <- apply(cooccur_data[,1:2], 1, function(x) {paste0(sort(x), collapse="_")})
+  
+    cooccur_data$popfrac <- NA
+    cooccur_idx <- cooccur_data$Event=="Co_Occurence"
+    mut_excl_idx = cooccur_data$Event=="Mutually_Exclusive"
+    
+    if (scale_ribbon_to_fracmut) {
+      cooccur_data$popfrac1[cooccur_idx] <- unlist(cooccur_data[cooccur_idx,"11"]/as.numeric(my_maf@summary$summary[3]))
+      cooccur_data$popfrac2[cooccur_idx] <- cooccur_data$popfrac1[cooccur_idx]
+      cooccur_data$popfrac1[mut_excl_idx] <- unlist(cooccur_data[mut_excl_idx,"10"]/as.numeric(my_maf@summary$summary[3]))
+      cooccur_data$popfrac2[mut_excl_idx] <- unlist(cooccur_data[mut_excl_idx,"01"]/as.numeric(my_maf@summary$summary[3]))
+    } else {
+      cooccur_data$popfrac1 <- 1
+      cooccur_data$popfrac2 <- 1
+    }
+    chord_data <- cooccur_data[,c("gene1","gene2","popfrac1","popfrac2","pValue","Event")]
+    chord_data[which(is.na(chord_data[,3])),3] <- 0
+    
+    require(RColorBrewer)
+    interacting_genes <- unique(unlist(chord_data[,1:2]))
+    # genecols <- colorRampPalette(brewer.pal(8,"Accent"))(length(interacting_genes))
+    # genecols <- colorRampPalette(brewer.pal(8,"Dark2"))(length(interacting_genes))
+    genecols <- colorRampPalette(brewer.pal(8,"Set1"))(length(interacting_genes))
+    # genecols <- rainbow((length(interacting_genes)))
+    names(genecols) <- interacting_genes
+    
+    if (is.function(progress_func)) {
+      progress_func(value=70, detail = "Building ribbon plot...")
+    }
+    sig_line_type=2
+    mut_excl_line_type=1
+    link_border <- ifelse(chord_data$pValue < pval_low, sig_line_type,0)
+    # color_legend <- Legend(labels=gsub("_"," ",names(cluster_sig_colors)), 
+    #                        legend_gp = gpar(fill = cluster_sig_colors),background = "white",size=unit(0.08,"npc"),pch=22,
+    #                        type="points",direction="horizontal",nrow=1)
+    line_legend <- Legend(labels=c(paste0("p < ",pval_low),"Mutually Exclusive"), 
+                          labels_gp = gpar(fontsize = 16, fontface = "bold"),
+                          legend_gp = gpar(lty=c(sig_line_type,mut_excl_line_type),lwd = 1, fontsize=16),background = "white",
+                          type="lines",direction="horizontal",nrow=1)
+    # mylegend <- packLegend(color_legend, line_legend)
+    if (!is.null(save_name)) {
+      if (! dir.exists(dirname(save_name))) {
+        dir.create(dirname(save_name))
+      }
+      pdf(file = save_name,height=7,width=7)
+    }
+    
+    if (is.null(ribbon_color)) {
+      ribbon_color = genecols[chord_data$gene1]
+      # ribbon_color[chord_data$Event == "Mutually_Exclusive"] = "grey90"
+    }
+    ribbon_color[chord_data$Event == "Mutually_Exclusive"] = "white"
+    link_border[chord_data$Event == "Mutually_Exclusive"]=1
+    shrink_factor=1.2 # Higher = more shrinkage; use to control whitespace (or lack thereof) around figure 
+    circos.clear()
+    circos.par(canvas.xlim=c(-shrink_factor,shrink_factor),canvas.ylim=c(-shrink_factor,shrink_factor))
+    chordDiagram(chord_data[,1:4],grid.col = genecols,
+                 annotationTrack = c("grid",ifelse(plot_frac_mut_axis, "axis", "")),
+                 col=ribbon_color,
+                 # transparency = link_alpha, 
+                 link.lty = link_border, 
+                 link.border = "black",
+                 link.sort = TRUE)
+    circos.track(track.index = 1, panel.fun = function(x, y) {
+      circos.text(CELL_META$xcenter, CELL_META$ylim[1], CELL_META$sector.index, 
+                  facing = "clockwise", niceFacing = TRUE, adj = c(-0.5, 0.5))
+    }, bg.border = NA) # here set bg.border to NA is important
+    # draw(color_legend, x = unit(0.5, "npc"), y = unit(0.02, "npc"), just = c("center"))
+    draw(line_legend, x = unit(0.5, "npc"), y = unit(0.05, "npc"), just = c("center"))
+    
+    if (is.function(progress_func)) {
+      progress_func(value=90, detail = "Drawing...")
+    }
+    
+    # return(list(ribbonplot=myribbonplot, legend=line_legend))
+    # if (!is.null(save_name)) {
+    #   dev.off()
+    # }
+    
+    
 }
 
 
