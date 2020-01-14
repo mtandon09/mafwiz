@@ -79,6 +79,8 @@ shinyServer(function(input, output, session) {
     if (nrow(filtered_maf@gene.summary) > 20) {
       print("here")
       updateRadioButtons(session=session, inputId="burden_plot_type",selected = "Dotplot")
+    } else {
+      updateRadioButtons(session=session, inputId="burden_plot_type",selected = "Barplot")
     }
     plot_values$maf_obj <- filtered_maf
     
@@ -345,7 +347,7 @@ shinyServer(function(input, output, session) {
     reset("maf_file_upload")
     myfile_path <- "data/TCGA-CHOL.maf"
     # plot_values$maf_obj <- read_maf(session=session, myfile_path)
-    raw_maf <- read_maf(session=session, maf_file)
+    raw_maf <- read_maf(session=session, myfile_path)
     
     plot_values$raw_maf_obj <- raw_maf
     
