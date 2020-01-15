@@ -16,7 +16,7 @@ source("helper_functions.shiny.R")
 # dataset <- diamonds
 # Define UI for data upload app ----
 shinyUI(
-  navbarPage(theme = shinytheme("flatly"),windowTitle="MafViz", selected="Upload and Filter",
+  navbarPage(theme = shinytheme("flatly"),windowTitle="MafWiz", selected="Upload and Filter",
              title="MafWiz", id="main_tabs",
              useShinyjs(),
              tabPanel("Upload and Filter",
@@ -53,6 +53,10 @@ shinyUI(
                         # checkboxInput("apply_filters", "Filter MAF file?", FALSE),
                         checkboxInput("exclude_flags", "Exclude known frequently mutated genes (FLAGs)?", FALSE),
                         actionLink("flags_info","More info on FLAGs genes"),
+                        bsModal("flags_info_popup","FLAGs filter","flags_info",
+                                # hr(),
+                                includeMarkdown("html_content/flags.md"),
+                                size="large"),
                         actionButton("run_apply_filters","Apply Filters"),
                       # ),
                       tags$hr(),
