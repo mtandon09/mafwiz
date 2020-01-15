@@ -304,7 +304,8 @@ make_single_ribbon_plot <- function(my_maf, onco_genes=NULL, topN=25,
     if (file.exists(plot_file)) {file.remove(plot_file)}
     # png(file = plot_file,height=4,width=4, units="in", res=200)
     png(file = plot_file,height=480,width=480)
-    som_int <-  somaticInteractions(maf = my_maf, top=topN, genes=onco_genes, pvalue = c(pval_low, pval_high), kMax=5,findPathways=F)
+    #som_int <-  somaticInteractions(maf = my_maf, top=topN, genes=onco_genes, pvalue = c(pval_low, pval_high), kMax=5,findPathways=F)
+    som_int <-  somaticInteractions(maf = my_maf, top=topN, genes=onco_genes, pvalue = c(pval_low, pval_high))
     dev.off()
 
     
