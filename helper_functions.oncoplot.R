@@ -174,11 +174,17 @@ make_oncoplot <- function(maf.filtered, cohort_freq_thresh = 0.1) {
 }
 
 
-make_burden_plot <- function(maf.filtered, plotType="Barplot") {
+make_burden_plot <- function(maf.filtered, plotType=NULL) {
+  
   num_var_data <- maf.filtered@variants.per.sample
   colnames(num_var_data) <- c("Tumor_Sample_Barcode","Variants_filtered")
   num_var_data$mut_burden <- num_var_data$Variants_filtered
   
+  if (is.null(plotType)) {
+    plotType <- ifelse(nrow(num_var_data) > 15, "Dotplot", "Barplot")
+    print(paste0("Using plot type: ", plotType))
+  }
+  # browser()
   ## Re-jigger the factor levels so they're ordered by decreasing mutation burden (for the plotting)
   num_var_data$Tumor_Sample_Barcode <- factor(num_var_data$Tumor_Sample_Barcode,
                                               levels=num_var_data$Tumor_Sample_Barcode[order(num_var_data$mut_burden, decreasing = T)])
@@ -192,14 +198,14 @@ make_burden_plot <- function(maf.filtered, plotType="Barplot") {
   ## Pick colors
   median_mut_burdens <- num_var_data %>% summarise(median=median(mut_burden))
   
-  num_var_data$xlabel <- gsub("Sample.*_","",num_var_data$Tumor_Sample_Barcode)
+  # num_var_data$xlabel <- gsub("Sample.*_","",num_var_data$Tumor_Sample_Barcode)
   num_var_data$xlabel <- factor(num_var_data$xlabel,
                                 levels=num_var_data$xlabel[order(num_var_data$mut_burden, decreasing = T)])
   
   ### Mutation burden stacked with variant classification counts
   ### Works better for smaller cohorts, say < 20
   variant_type_per_sample <- as.data.frame(maf.filtered@variant.classification.summary)
-  variant_type_per_sample$Tumor_Sample_Barcode <- gsub("Sample.*_","",variant_type_per_sample$Tumor_Sample_Barcode)
+  # variant_type_per_sample$Tumor_Sample_Barcode <- gsub("Sample.*_","",variant_type_per_sample$Tumor_Sample_Barcode)
   var_type.melt <- reshape2::melt(variant_type_per_sample, id.vars="Tumor_Sample_Barcode",variable.name="classification",value.name="mutation_count")
   var_type.melt$mut_burden <- var_type.melt$mutation_count
   median_mut_burdens <- data.frame(median=median(var_type.melt[var_type.melt$classification== "total","mut_burden"]))
@@ -216,7 +222,7 @@ make_burden_plot <- function(maf.filtered, plotType="Barplot") {
   my_class_colors <- mutation_colors
   # names(my_class_colors) <- gsub("_", " ",names(my_class_colors))
   
-  
+
   if (plotType=="Barplot") {
     if (length(unique(plotdata$Tumor_Sample_Barcode)) <= 20) {
       xaxis_text <- element_text(angle=30, hjust=1)
@@ -304,8 +310,7 @@ make_single_ribbon_plot <- function(my_maf, onco_genes=NULL, topN=25,
     if (file.exists(plot_file)) {file.remove(plot_file)}
     # png(file = plot_file,height=4,width=4, units="in", res=200)
     png(file = plot_file,height=480,width=480)
-    #som_int <-  somaticInteractions(maf = my_maf, top=topN, genes=onco_genes, pvalue = c(pval_low, pval_high), kMax=5,findPathways=F)
-    som_int <-  somaticInteractions(maf = my_maf, top=topN, genes=onco_genes, pvalue = c(pval_low, pval_high))
+    som_int <-  somaticInteractions(maf = my_maf, top=topN, genes=onco_genes, pvalue = c(pval_low, pval_high), kMax=5,findPathways=F)
     dev.off()
 
     
@@ -486,11 +491,13 @@ make_mut_signature_heatmap <- function(mymaf,use_silent_mutations=F, clinVarName
   
   # fit_res <- fit_to_signatures(mut_mat, cosmic_signatures)
   
+  # data_dir="data"
   etio_data_file = paste0(data_dir, "/cosmic/COSMIC_signature_etiology.xlsx")
   etiology_data_raw <- read.xlsx(etio_data_file, sheet="final categories")
-  etiology_data <- as.character(etiology_data_raw$CATEGORY)
-  names(etiology_data) <- etiology_data_raw$signature
-  etiology_colors <-  list(etiology=c("APOBEC" = "#fce116",
+  # etiology_data <- as.character(etiology_data_raw$CATEGORY)
+  etiology_data <- data.frame(Etiology=etiology_data_raw$CATEGORY, row.names=etiology_data_raw$signature)
+  # names(etiology_data) <- etiology_data_raw$signature
+  etiology_colors <-  list(Etiology=c("APOBEC" = "#fce116",
                                       "Defective DNA Mismatch Repair" = "#31A354",
                                       "Defective DNA Repair" = "#A1D99B",
                                       "Exonuclease Domain" = "#E5F5E0",
@@ -512,7 +519,7 @@ make_mut_signature_heatmap <- function(mymaf,use_silent_mutations=F, clinVarName
   )
 
   plot_matrix <- t(cos_sim_samples_signatures)
-  
+  plot_matrix <- plot_matrix[match(rownames(etiology_data),rownames(plot_matrix)),]
   if (is.function(progress_func)) {
     progress_func(value=80, detail = "Making heatmap")
   }
@@ -531,15 +538,17 @@ make_mut_signature_heatmap <- function(mymaf,use_silent_mutations=F, clinVarName
     patient_anno <- columnAnnotation(df=anno_data, name="Patient Anno", col=pheno_colors, annotation_height = unit(1,"inches"))
     names(patient_anno) <- anno_names[names(patient_anno)]
   } else {
-    mylabels <- gsub("^Sample.*?_(.*)$","\\1",sample_info$Tumor_Sample_Barcode)
+    # mylabels <- gsub("^Sample.*?_(.*)$","\\1",sample_info$Tumor_Sample_Barcode)
+    mylabels <- sample_info$Tumor_Sample_Barcode
     patient_anno <- columnAnnotation(Sample=anno_text(mylabels, rot = 30, gp = gpar(fontsize=10)), name="Patient Anno", annotation_height = unit(1,"inches"))
   }
   
   
   # browser()
   rowOrder=order(etiology_data)
-  etiology_data <- etiology_data[rowOrder]
-  signature_anno <- rowAnnotation(df=data.frame(etiology=etiology_data, row.names=rownames(plot_matrix)), 
+  etiology_data <- etiology_data[rowOrder,1,drop=F]
+  mycolors <- etiology_colors
+  signature_anno <- rowAnnotation(df=etiology_data, 
                                   name="Signature Anno", col=etiology_colors, show_annotation_name = FALSE)
   
   # pdf(file = paste0(figures_folder,"/cosmic_v3_cosine_sim.pdf"), width=8, height=6)
