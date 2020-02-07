@@ -519,7 +519,7 @@ make_mut_signature_heatmap <- function(mymaf,use_silent_mutations=F, clinVarName
   )
 
   plot_matrix <- t(cos_sim_samples_signatures)
-  plot_matrix <- plot_matrix[match(rownames(etiology_data),rownames(plot_matrix)),]
+
   if (is.function(progress_func)) {
     progress_func(value=80, detail = "Making heatmap")
   }
@@ -550,14 +550,15 @@ make_mut_signature_heatmap <- function(mymaf,use_silent_mutations=F, clinVarName
   mycolors <- etiology_colors
   signature_anno <- rowAnnotation(df=etiology_data, 
                                   name="Signature Anno", col=etiology_colors, show_annotation_name = FALSE)
-  
+
+  plot_matrix <- plot_matrix[match(rownames(etiology_data),rownames(plot_matrix)),]  
   # pdf(file = paste0(figures_folder,"/cosmic_v3_cosine_sim.pdf"), width=8, height=6)
   myHM <- Heatmap(plot_matrix, 
           col=colorRamp2(seq(min(plot_matrix), max(plot_matrix), length.out = 20),colorRampPalette(brewer.pal(9, "BuGn"))(20)),
           # col=colorRamp2(c(0, 0.1,0.8,1),colorRampPalette(brewer.pal(9, "YlGnBu"))(4)),
           left_annotation = signature_anno,
           # bottom_annotation = patient_anno,
-          cluster_rows = F, row_order = rowOrder,
+          cluster_rows = F, #row_order = rowOrder,
           clustering_method_rows = "median",
           clustering_method_columns = "median",
           heatmap_height = unit(6, "inches"),
