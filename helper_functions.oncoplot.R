@@ -80,7 +80,8 @@ filter_maf <- function(maf_file, flag_genes="default",save_name=NULL,no_filter=F
 
 
 
-make_oncoplot <- function(maf.filtered, cohort_freq_thresh = 0.1) {
+make_oncoplot <- function(maf.filtered, cohort_freq_thresh = 0.1, 
+                          clin_data=NULL, clin_data_colors=NULL) {
   
   ### Read in MAF file
   # maf.filtered <- read.maf(maf_file)
@@ -152,6 +153,15 @@ make_oncoplot <- function(maf.filtered, cohort_freq_thresh = 0.1) {
   if (ncol(oncomat.plot) > 20) {
     show_sample_names=F
   }
+  
+  # browser()
+  myanno=NULL
+  if (!is.null(clin_data)) {
+    
+    myanno <- make_column_annotation(clin_data,colnames(oncomat.plot), clin_data_colors)
+    # print(myanno)
+  }
+  
   # print(oncomat.plot)
   ### Make the oncoplot
   onco_base_default <- oncoPrint(oncomat.plot, alter_fun = alter_fun, col=mutation_colors, row_order=1:nrow(oncomat.plot),
@@ -159,13 +169,15 @@ make_oncoplot <- function(maf.filtered, cohort_freq_thresh = 0.1) {
                                  show_pct = F,
                                  row_split=split_idx,
                                  row_title = NULL,
+                                 bottom_annotation = myanno,
                                  show_column_names = show_sample_names)#,
                                  # column_names_rot = 30,
                                  # column_gap = unit(0.0001,"npc"),
                                  # width = unit(0.75, "npc"))
   
   ### Save the oncoplot
-  return(onco_base_default)
+  return_plt <- onco_base_default
+  # return(onco_base_default)
   # save_name <- paste0(out_dir,"/oncoplot.",cohort_freq_thresh,".pdf")
   # onco_width=10
   # pdf(file = save_name,height=onco_height,width=onco_width)
@@ -205,7 +217,6 @@ make_burden_plot <- function(maf.filtered, plotType=NULL) {
   ### Mutation burden stacked with variant classification counts
   ### Works better for smaller cohorts, say < 20
   variant_type_per_sample <- as.data.frame(maf.filtered@variant.classification.summary)
-  # variant_type_per_sample$Tumor_Sample_Barcode <- gsub("Sample.*_","",variant_type_per_sample$Tumor_Sample_Barcode)
   var_type.melt <- reshape2::melt(variant_type_per_sample, id.vars="Tumor_Sample_Barcode",variable.name="classification",value.name="mutation_count")
   var_type.melt$mut_burden <- var_type.melt$mutation_count
   median_mut_burdens <- data.frame(median=median(var_type.melt[var_type.melt$classification== "total","mut_burden"]))
@@ -220,7 +231,6 @@ make_burden_plot <- function(maf.filtered, plotType=NULL) {
                                     levels=class_means$classification[order(class_means$mean, decreasing = F)])
   
   my_class_colors <- mutation_colors
-  # names(my_class_colors) <- gsub("_", " ",names(my_class_colors))
   
 
   if (plotType=="Barplot") {
@@ -237,12 +247,8 @@ make_burden_plot <- function(maf.filtered, plotType=NULL) {
       geom_hline(data = median_mut_burdens, aes(yintercept=median),linetype="dashed", color="grey60") +
       theme(
         axis.text.x = xaxis_text,
-        # axis.text.x = element_text(angle=30, hjust=1),
-        # axis.text.x = element_blank(),
-        # axis.ticks.x = element_blank(),
         legend.position = "right",
         legend.text = element_text(size=8),
-        # legend.title = element_text(size=6),
         legend.title = element_blank(),
         legend.key.height = unit(0.01,"npc"),
         legend.key.width =  unit(0.02,"npc"),
@@ -263,12 +269,7 @@ make_burden_plot <- function(maf.filtered, plotType=NULL) {
       alpha_val=0.8
     }
     burden_plot <- ggplot(num_var_data, aes(x=1, y=mut_burden)) +
-      # geom_jitter(aes(x=1, y=mut_burden),inherit.aes=F,color="blue3",
-      #            cex=2,size=1.5, alpha=alpha_val) +
-      # geom_point(aes(x=Tumor_Sample_Barcode, y=mut_burden),inherit.aes=F,color="blue3",
-      #            cex=2,size=1.5, position = position_dodge(width=0.6), alpha=alpha_val) +
       geom_beeswarm(color="blue3",cex=2,size=5,dodge.width=0.2,priority='density', alpha=alpha_val) +
-      # geom_quasirandom(color="blue3",cex=2,dodge.width=1,method="tukeyDense", alpha=alpha_val) +  ### This looks nicer for fewer points/smaller cohorts than geom_beeswarm
       stat_summary(fun.y = median, fun.ymin = median, fun.ymax = median,
                    geom = "crossbar", width = 0.7, color="gray70", size = 0.2) +
       scale_y_log10()+
@@ -290,7 +291,6 @@ make_single_ribbon_plot <- function(my_maf, onco_genes=NULL, topN=25,
                                       ribbon_color=NULL, 
                                       pval_low=0.05, pval_high=0.1,
                                       plot_frac_mut_axis=TRUE,
-                                      # plot_file="maftools_somaticInteractions.pdf",
                                       plot_file="maftools_somaticInteractions.png",
                                       progress_func=NULL,
                                       scale_ribbon_to_fracmut=TRUE) {
@@ -298,17 +298,13 @@ make_single_ribbon_plot <- function(my_maf, onco_genes=NULL, topN=25,
       if (! dir.exists(dirname(save_name))) {
         dir.create(dirname(save_name))
       }
-      # plot_file <- gsub(".pdf",".interactions.pdf",save_name)
-      # pdf(file = plot_file,height=5,width=5)
     }
     if (is.function(progress_func)) {
       progress_func(value=10, detail = "Running maftools' somaticInteractions()")
     }
   
     
-    # pdf(file = plot_file,height=5,width=5)
     if (file.exists(plot_file)) {file.remove(plot_file)}
-    # png(file = plot_file,height=4,width=4, units="in", res=200)
     png(file = plot_file,height=480,width=480)
     som_int <-  somaticInteractions(maf = my_maf, top=topN, genes=onco_genes, pvalue = c(pval_low, pval_high), kMax=5,findPathways=F)
     dev.off()
@@ -338,10 +334,7 @@ make_single_ribbon_plot <- function(my_maf, onco_genes=NULL, topN=25,
     
     require(RColorBrewer)
     interacting_genes <- unique(unlist(chord_data[,1:2]))
-    # genecols <- colorRampPalette(brewer.pal(8,"Accent"))(length(interacting_genes))
-    # genecols <- colorRampPalette(brewer.pal(8,"Dark2"))(length(interacting_genes))
     genecols <- colorRampPalette(brewer.pal(8,"Set1"))(length(interacting_genes))
-    # genecols <- rainbow((length(interacting_genes)))
     names(genecols) <- interacting_genes
     
     if (is.function(progress_func)) {
@@ -350,14 +343,12 @@ make_single_ribbon_plot <- function(my_maf, onco_genes=NULL, topN=25,
     sig_line_type=2
     mut_excl_line_type=1
     link_border <- ifelse(chord_data$pValue < pval_low, sig_line_type,0)
-    # color_legend <- Legend(labels=gsub("_"," ",names(cluster_sig_colors)), 
-    #                        legend_gp = gpar(fill = cluster_sig_colors),background = "white",size=unit(0.08,"npc"),pch=22,
-    #                        type="points",direction="horizontal",nrow=1)
+    
     line_legend <- Legend(labels=c(paste0("p < ",pval_low),"Mutually Exclusive"), 
                           labels_gp = gpar(fontsize = 16, fontface = "bold"),
                           legend_gp = gpar(lty=c(sig_line_type,mut_excl_line_type),lwd = 1, fontsize=16),background = "white",
                           type="lines",direction="horizontal",nrow=1)
-    # mylegend <- packLegend(color_legend, line_legend)
+    
     if (!is.null(save_name)) {
       if (! dir.exists(dirname(save_name))) {
         dir.create(dirname(save_name))
@@ -367,7 +358,6 @@ make_single_ribbon_plot <- function(my_maf, onco_genes=NULL, topN=25,
     
     if (is.null(ribbon_color)) {
       ribbon_color = genecols[chord_data$gene1]
-      # ribbon_color[chord_data$Event == "Mutually_Exclusive"] = "grey90"
     }
     ribbon_color[chord_data$Event == "Mutually_Exclusive"] = "white"
     link_border[chord_data$Event == "Mutually_Exclusive"]=1
@@ -391,11 +381,6 @@ make_single_ribbon_plot <- function(my_maf, onco_genes=NULL, topN=25,
     if (is.function(progress_func)) {
       progress_func(value=90, detail = "Drawing...")
     }
-    
-    # return(list(ribbonplot=myribbonplot, legend=line_legend))
-    # if (!is.null(save_name)) {
-    #   dev.off()
-    # }
     
     
 }
@@ -426,6 +411,7 @@ detect_maf_genome <- function(maf) {
 make_mut_signature_heatmap <- function(mymaf,use_silent_mutations=F, clinVarNames = NULL, 
                                        data_dir="data", full_output=F,
                                        genome_build="hg19",
+                                       clin_data=NULL, clin_data_colors=NULL,
                                        progress_func=NULL) {
   
   genome_build_res <- detect_maf_genome(mymaf)
@@ -439,13 +425,13 @@ make_mut_signature_heatmap <- function(mymaf,use_silent_mutations=F, clinVarName
     progress_func(value=0, detail = "Computing signatures")
   }
   
-  print(paste0("add chr: ",genome_build_res[[2]]))
+  # print(paste0("add chr: ",genome_build_res[[2]]))
   prefix_value=ifelse(genome_build_res[[2]],"chr","")
   # add_prefix=genome_build!="hg19"
   
   # print(date())
   print(paste0("build: ",genome_build))
-  print(paste0("prefix: ",prefix_value))
+  # print(paste0("prefix: ",prefix_value))
   # print(add_prefix)
   print(unique(mymaf@data$Chromosome))
   # print(unique(mymaf@data$Chromosome))
@@ -462,7 +448,7 @@ make_mut_signature_heatmap <- function(mymaf,use_silent_mutations=F, clinVarName
   # write.table(mut_mat, file = paste0(figures_folder,"mutation_burden.data.txt"), sep="\t", quote=F,row.names = F)
   
   
-  sp_url <- paste0(data_dir,"/cosmic/sigProfiler_exome_SBS_signatures.csv")
+  sp_url <- file.path(data_dir,"cosmic","sigProfiler_exome_SBS_signatures.csv")
   cosmic_signatures = read.table(sp_url, sep = ",", header = TRUE, stringsAsFactors = F)
   cosmic_signatures$Somatic.Mutation.Type <- paste0(substr(cosmic_signatures$SubType, 1, 1),
                                                     "[",cosmic_signatures$Type, "]",
@@ -492,7 +478,7 @@ make_mut_signature_heatmap <- function(mymaf,use_silent_mutations=F, clinVarName
   # fit_res <- fit_to_signatures(mut_mat, cosmic_signatures)
   
   # data_dir="data"
-  etio_data_file = paste0(data_dir, "/cosmic/COSMIC_signature_etiology.xlsx")
+  etio_data_file = file.path(data_dir, "cosmic","COSMIC_signature_etiology.xlsx")
   etiology_data_raw <- read.xlsx(etio_data_file, sheet="final categories")
   # etiology_data <- as.character(etiology_data_raw$CATEGORY)
   etiology_data <- data.frame(Etiology=etiology_data_raw$CATEGORY, row.names=etiology_data_raw$signature)
@@ -519,30 +505,10 @@ make_mut_signature_heatmap <- function(mymaf,use_silent_mutations=F, clinVarName
   )
 
   plot_matrix <- t(cos_sim_samples_signatures)
-
+  
   if (is.function(progress_func)) {
     progress_func(value=80, detail = "Making heatmap")
   }
-  
-  # browser()
-  sample_info <- as.data.frame(mymaf@clinical.data)
-  if (ncol(sample_info)>1) {
-    sample_info <- sample_info[sample_info$Tumor_Sample_Barcode %in% colnames(plot_matrix),]
-    if (is.null(clinVarNames)) {
-      clinVarNames <- colnames(sample_info)
-    }
-    anno_data <- sample_info[, colnames(sample_info) %in% names(clinVarNames)]
-    pheno_colors <- my_oncoplot_colors(anno_data)
-    
-  
-    patient_anno <- columnAnnotation(df=anno_data, name="Patient Anno", col=pheno_colors, annotation_height = unit(1,"inches"))
-    names(patient_anno) <- anno_names[names(patient_anno)]
-  } else {
-    # mylabels <- gsub("^Sample.*?_(.*)$","\\1",sample_info$Tumor_Sample_Barcode)
-    mylabels <- sample_info$Tumor_Sample_Barcode
-    patient_anno <- columnAnnotation(Sample=anno_text(mylabels, rot = 30, gp = gpar(fontsize=10)), name="Patient Anno", annotation_height = unit(1,"inches"))
-  }
-  
   
   # browser()
   rowOrder=order(etiology_data)
@@ -550,15 +516,21 @@ make_mut_signature_heatmap <- function(mymaf,use_silent_mutations=F, clinVarName
   mycolors <- etiology_colors
   signature_anno <- rowAnnotation(df=etiology_data, 
                                   name="Signature Anno", col=etiology_colors, show_annotation_name = FALSE)
-
-  plot_matrix <- plot_matrix[match(rownames(etiology_data),rownames(plot_matrix)),]  
-  # pdf(file = paste0(figures_folder,"/cosmic_v3_cosine_sim.pdf"), width=8, height=6)
+  
+  plot_matrix <- plot_matrix[match(rownames(etiology_data),rownames(plot_matrix)),]
+  
+  myanno=NULL
+  if (!is.null(clin_data)) {
+    
+    myanno <- make_column_annotation(clin_data,colnames(plot_matrix), clin_data_colors)
+    # print(myanno)
+  }
+  
   myHM <- Heatmap(plot_matrix, 
           col=colorRamp2(seq(min(plot_matrix), max(plot_matrix), length.out = 20),colorRampPalette(brewer.pal(9, "BuGn"))(20)),
-          # col=colorRamp2(c(0, 0.1,0.8,1),colorRampPalette(brewer.pal(9, "YlGnBu"))(4)),
           left_annotation = signature_anno,
-          # bottom_annotation = patient_anno,
-          cluster_rows = F, #row_order = rowOrder,
+          bottom_annotation = myanno,
+          cluster_rows = F, row_order = rowOrder,
           clustering_method_rows = "median",
           clustering_method_columns = "median",
           heatmap_height = unit(6, "inches"),
@@ -571,7 +543,6 @@ make_mut_signature_heatmap <- function(mymaf,use_silent_mutations=F, clinVarName
           ),
           show_row_names=T, row_names_gp = gpar(fontsize = 5),
           show_column_names = F)
-  # dev.off()
   
   if (full_output) {
     output_list <- list(plot_matrix,signature_anno, patient_anno,etiology_data, myHM)
@@ -583,6 +554,53 @@ make_mut_signature_heatmap <- function(mymaf,use_silent_mutations=F, clinVarName
 }
 
 
+make_column_annotation <- function(my_clin_dat, names_to_match, my_colors=NULL) {
+
+  myanno <- NULL
+  
+  if ("Tumor_Sample_Barcode" %in% colnames(my_clin_dat)) {
+    tsb_idx=which(colnames(my_clin_dat)=="Tumor_Sample_Barcode")
+  } else {
+    tsb_idx <- which(apply(my_clin_dat,2, function(x) { sum(names_to_match %in% x)/length(names_to_match)})>0.9)[1]
+  }
+ 
+  if ( is.na(tsb_idx) ) {
+    warning("No Tumor Sample Barcode match found")
+  } else {
+    anno_data <- my_clin_dat
+    rownames(anno_data) <- anno_data[,tsb_idx]
+    anno_data <- anno_data[,-tsb_idx, drop=F]
+    
+    anno_data <- anno_data[match(names_to_match,rownames(anno_data)),,drop=F]
+    
+    make_legends <- apply(anno_data,2,function(x) {
+      ret_val=TRUE
+      if (is.factor(x) && levels(x)>10) {
+        ret_val=FALSE 
+      }
+      return(ret_val)
+    })
+    
+    if (!is.null(my_colors)) {
+      myanno <- HeatmapAnnotation(df=anno_data,
+                                  which="column",
+                                  col = my_colors,
+                                  show_legend = make_legends, 
+                                  show_annotation_name = TRUE,
+                                  annotation_name_side = "right")
+      
+    } else {
+      myanno <- HeatmapAnnotation(df=anno_data,
+                                  which="column",
+                                  show_legend = make_legends, 
+                                  show_annotation_name = TRUE,
+                                  annotation_name_side = "right")
+    }
+    
+  }
+  
+  return(myanno)
+}
 
 
 
