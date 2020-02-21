@@ -24,7 +24,7 @@ if(length(new.bioc.packages)) BiocManager::install(new.bioc.packages)
 ### Run from GitHub in RStudio
 ```
 library(shiny)
-runGitHub( "mafwiz", "mtandon09", ref="master")
+runGitHub( "mafwiz", "mtandon09", ref="dev")
 ```
 
 # Example usage:
