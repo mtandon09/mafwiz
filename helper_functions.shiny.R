@@ -1,12 +1,27 @@
 read_maf <- function(session,maf_file_path) {
   maf_progress <- shiny::Progress$new(session,max=100)
   maf_progress$set(value = 0, message = "Reading MAF file...")
+  
+  print(maf_file_path)
   maf <- read.maf(maf_file_path)
 
   maf_progress$set(value = 100, message = "Upload complete.")
   maf_progress$close()
   
   return(maf)  
+}
+
+
+withConsoleRedirect <- function(containerId, expr) {
+  # Change type="output" to type="message" to catch stderr
+  # (messages, warnings, and errors) instead of stdout.
+  txt <- capture.output(results <- expr, type = "message")
+  if (length(txt) > 0) {
+    insertUI(paste0("#", containerId), where = "beforeEnd",
+             ui = paste0(txt, "\n", collapse = "")
+    )
+  }
+  results
 }
 
 make_gene_ribbon_plot <- function(session, input, plot_values) {
@@ -50,6 +65,41 @@ make_gene_ribbon_plot <- function(session, input, plot_values) {
   
 }
 
+callback <- c(
+  "$.contextMenu({",
+  "  selector: '#maf_clin_dat_table th',", 
+  "  trigger: 'right',",
+  "  autoHide: true,",
+  "  zindex: 999999,",
+  "  items: {",
+  "    text: {",
+  "      name: 'Enter column header:',", 
+  "      type: 'text',", 
+  "      value: ''", 
+  "    }",
+  "  },",
+  "  events: {",
+  "    show: function(opts){",
+  "      $.contextMenu.setInputValues(opts, {text: opts.$trigger.text()});",
+  "    },",
+  "    hide: function(opts){",
+  "      var $this = this;",
+  "      var data = $.contextMenu.getInputValues(opts, $this.data());",
+  "      var $th = opts.$trigger;",
+  "      $th.text(data.text);",
+  "    }",
+  "  }",
+  "});" 
+)
+
+shinyInput <- function(FUN, len, id, ...) {
+  inputs <- character(len)
+  for (i in seq_len(len)) {
+    inputs[i] <- as.character(FUN(paste0(id, i), ...))
+  }
+  inputs
+}
+
 TCGA_project_choices=c(
   "[TCGA-LAML] Acute Myeloid Leukemia"="TCGA-LAML",
   "[TCGA-ACC] Adrenocortical carcinoma"="TCGA-ACC",
@@ -73,7 +123,7 @@ TCGA_project_choices=c(
   "[TCGA-LUSC] Lung squamous cell carcinoma"="TCGA-LUSC",
   "[TCGA-DLBC] Lymphoid Neoplasm Diffuse Large B-cell Lymphoma"="TCGA-DLBC",
   "[TCGA-MESO] Mesothelioma"="TCGA-MESO",
-  #"[TCGA-MISC] Miscellaneous"="TCGA-MISC",
+  "[TCGA-MISC] Miscellaneous"="TCGA-MISC",
   "[TCGA-OV] Ovarian serous cystadenocarcinoma"="TCGA-OV",
   "[TCGA-PAAD] Pancreatic adenocarcinoma"="TCGA-PAAD",
   "[TCGA-PCPG] Pheochromocytoma and Paraganglioma"="TCGA-PCPG",
