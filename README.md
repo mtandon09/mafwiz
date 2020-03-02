@@ -30,6 +30,8 @@ runGitHub( "mafwiz", "mtandon09", ref="dev")
 # Example usage:
 Upload your own MAF file or download TCGA MAFs on-the-fly
    ![alt text](screenshots/landing.png "Select MAF")
+Add sample information for annotations
+   ![alt text](screenshots/sample_info.png "Add sample annotations")
 Visualizations
    - Mutational Burden
     ![alt text](screenshots/burden.png "Burden Plot")
