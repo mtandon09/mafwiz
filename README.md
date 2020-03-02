@@ -36,11 +36,11 @@ Visualizations
    - Mutational Burden
     ![alt text](screenshots/burden.png "Burden Plot")
    - Oncoplot
-    ![alt text](screenshots/oncoplot.png "Burden Plot")
+    ![alt text](screenshots/oncoplot.png "Oncoplot")
    - Mutational Signatures (COSMIC v3)
-    ![alt text](screenshots/mutational_signatures.png "Burden Plot")
-   - Co-occurence of gene mutations
-    ![alt text](screenshots/comut_genes.png "Burden Plot")
+    ![alt text](screenshots/mutational_signatures.png "Mutataional Signatures")
+   - Output data as table
+    ![alt text](screenshots/variant_table.png "Variant Table")
 
 
 # To Do
