@@ -646,6 +646,7 @@ createOncoMatrix = function(m, g = NULL, chatty = TRUE, add_missing = FALSE){
                                 
                                 if(length(xvc)>0){
                                   xvc = ifelse(test = length(xvc) > 1, yes = 'Multi_Hit', no = xvc)
+                                  # xvc = paste0(xvc, collapse="|")
                                 }
                                 
                                 x = ifelse(test = length(xad) > 0, yes = paste(xad, xvc, sep = ';'), no = xvc)
@@ -768,6 +769,63 @@ orderByGroup <- function(my_oncomat, info_vec) {
   new_order <- match(new_names_order, colnames(my_oncomat))
   return(new_order)
 }
+
+
+
+
+
+make_variant_table <- function(maf.filter, use_syn=F) {
+  
+  output_data <- maf.filter@data
+  if (use_syn) {
+    output_data <- rbind(output_data, maf.filter@maf.silent)
+  }
+  
+  output_data$tumor_genotype <- apply(output_data[,c("Tumor_Seq_Allele1","Tumor_Seq_Allele2")], 1, paste, collapse="/")
+  output_data$normal_genotype <- apply(output_data[,c("Match_Norm_Seq_Allele1","Match_Norm_Seq_Allele2")], 1, paste, collapse="/")
+  
+  # pheno_info <- sample_info.exome[match(output_data$Tumor_Sample_Barcode, sample_info.exome$Tumor_Sample_Barcode),]
+  # pheno_info <- cbind(pheno_info[,"Tumor_Sample_Barcode"],pheno_info[,-c("Tumor_Sample_Barcode")])
+  # pheno_columns <- colnames(pheno_info)
+  # names(pheno_columns) <- make.names(pheno_columns, unique = T)
+
+  # output_data <- cbind(output_data,pheno_info)
+  cols_for_table <- c("Hugo Symbol" = "Hugo_Symbol",
+                      "Variant Classification"="Variant_Classification",
+                      "Variant Type"="Variant_Type",
+                      "Consequence"="Consequence",
+                      # pheno_columns,
+                      "Chromosome"="Chromosome","Start Position" ="Start_Position","End Position"="End_Position","Strand"="Strand",
+                      "Reference Allele"="Reference_Allele",
+                      "Tumor Genotype"="tumor_genotype",
+                      "Normal Genotype"="normal_genotype",
+                      "Transcript Change"="HGVSc",
+                      "Protein Change"="HGVSp_Short",
+                      "Normal Depth"="n_depth",
+                      "Normal Ref Depth"="n_ref_count",
+                      "Normal Alt Depth"="n_alt_count",
+                      "Tumor Depth"="t_depth",
+                      "Tumor Ref Depth"="t_ref_count",
+                      "Tumor Alt Depth"="t_alt_count",
+                      "Existing Annotation"="Existing_variation",
+                      "gnomAD Frequency"="gnomAD_AF",
+                      "ExAC Frequency"="ExAC_AF",
+                      "1000Genomes Frequency"="AF",
+                      "Current Cohort Frequency"="tumor_freq"
+  )
+  
+  # variant_info <- as.data.frame(output_data)[,cols_for_table]
+  output_cols <- colnames(output_data) %in% cols_for_table
+  variant_info <- as.data.frame(output_data)[,output_cols]
+  # colnames(variant_info) <- names(cols_for_table)[match(colnames(variant_info),output_cols]
+  return(variant_info)
+}
+
+
+
+
+
+
 
 
 

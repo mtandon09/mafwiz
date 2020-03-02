@@ -9,6 +9,8 @@ library(RColorBrewer)
 library(ggplot2)
 library(reshape2)
 library(colourpicker)
+library(rhandsontable)
+library(shinybusy)
 
 library(maftools)
 library(ComplexHeatmap)
@@ -33,6 +35,7 @@ shinyServer(function(input, output, session) {
   plot_values$raw_maf_obj <- NULL
   plot_values$maf_obj <- NULL
   plot_values$gene_interaction_pdf <- "maftools_somatic_interactions.png"
+  plot_values$output_table <- NULL
   
   clin_var_values <- reactiveValues()
   clin_var_values$clin_var_data <- NULL
@@ -65,13 +68,14 @@ shinyServer(function(input, output, session) {
     raw_maf <- read_maf(session=session, maf_file)
     
     plot_values$raw_maf_obj <- raw_maf
-    
+    click("get_tcga_clinical_data")
     click("run_apply_filters")
   })
   
   observeEvent(input$get_tcga_clinical_data, {
     req(input$tcga_dataset)
     print("get tcga clin data")
+    click("clear_clinical_data")
     
     save_folder="data/tcga_data"
     tcga_clinical_file=file.path(save_folder,input$tcga_dataset,paste0(input$tcga_dataset,".clinical.txt"))
@@ -87,7 +91,7 @@ shinyServer(function(input, output, session) {
   observeEvent(input$sample_file_upload, {
     req(input$tcga_dataset)
     print("get local clin data")
-    
+    click("clear_clinical_data")
     clin_var_values$clin_data_file <- input$sample_file_upload$datapath
     
   })
@@ -95,6 +99,7 @@ shinyServer(function(input, output, session) {
   
   observeEvent(input$load_example_clinical_data, {
     reset("sample_file_upload")
+    click("clear_clinical_data")
     myfile_path <- file.path("data","TCGA-CHOL.clinical.txt")
     
     print("get example clin data")
@@ -106,6 +111,7 @@ shinyServer(function(input, output, session) {
   
   observe({
     req(clin_var_values$clin_data_file)
+    click("clear_clinical_data")
     clinical_file <- clin_var_values$clin_data_file 
     file_type=tools::file_ext(clinical_file)
     if (grepl("xls*",file_type)) {
@@ -120,9 +126,9 @@ shinyServer(function(input, output, session) {
     
     updateSelectInput(session, "select_curr_clin_var", choices = colnames(clin_var_values$clin_data_upload))
     
-    updateTabsetPanel(session, "main_tabs",
-                      selected = "Pick Clinical Variables")
-    
+    updateTabItems(session, "tab_menu",
+                      selected = "get-clinical-variables")
+
     
   })
   
@@ -142,14 +148,13 @@ shinyServer(function(input, output, session) {
       clin_var_values$clin_var_data <- cbind(clin_var_values$clin_var_data,curr_data_table)
     }
     updateSelectInput(session,"color_var_picker","Select Variable",choices=colnames(clin_var_values$clin_var_data))
-    # updateSelectInput(session,"color_var_type_picker","Select Variable",choices=colnames(clin_var_values$clin_var_data))
-    # print(curr_data_table)
     
     
   })
   
   observeEvent(input$clear_clinical_data, {
     clin_var_values$clin_var_data <- NULL
+    clin_var_values$clin_anno_colors <- NULL
   })
   
   
@@ -189,8 +194,11 @@ shinyServer(function(input, output, session) {
     }
     plot_values$maf_obj <- filtered_maf
     
-    updateTabsetPanel(session, "main_tabs",
-                      selected = "Visualizations")
+    plot_values$output_table <- make_variant_table(plot_values$maf_obj)
+    
+    updateTabItems(session, "tab_menu",
+                      selected = "visualizations")
+
     
   })
   
@@ -234,7 +242,6 @@ shinyServer(function(input, output, session) {
         ribbon_progress$set(value = value, message = detail)
       }
       
-      # ribbon_results <- make_single_ribbon_plot(plotopts$maf_obj, 
       make_single_ribbon_plot(plotopts$maf_obj, 
                               ribbon_color=plotopts$ribbon_color, 
                               topN=plotopts$topN,
@@ -294,35 +301,49 @@ shinyServer(function(input, output, session) {
   )
   
   
-  output$maf_clin_dat_table <- renderDataTable({
+  output$maf_clin_dat_table <- renderRHandsontable({
     req(clin_var_values$clin_var_data)
     curr_data <- clin_var_values$clin_var_data
     curr_data <- curr_data[,!duplicated(colnames(curr_data)), drop=F]
     
-    datatable(curr_data,
-              callback = JS(callback),
-              rownames=F,
-              editable=T, 
-              escape=T,
-              # server=F,
-              plugins = c("scrolling","ellipses"),
+    rhandsontable(curr_data) %>%
+      hot_table(highlightCol = TRUE, highlightRow = TRUE)
+  })
+
+  
+  output$output_variant_table_rhandson <- renderRHandsontable({
+    req(plot_values$output_table)
+    
+    
+    var_table <- plot_values$output_table
+    
+    rhandsontable(var_table)
+  })
+  
+  output$output_variant_table_DT <- renderDT({
+    req(plot_values$output_table)
+    
+    
+    var_table <- plot_values$output_table
+    
+    datatable(var_table,
               extensions = c("AutoFill","ColReorder","KeyTable","Scroller"),
               options = list(searching = T,
                              deferRender = T,
-                             autoFill = T,
-                             colReorder = T,
-                             keys = T,
-                             # scrollY = 400,
-                             scroller = F))
-  # print(input$maf_clin_dat_table_state)
-  },server = FALSE)
-
+                             autoFill = F,
+                             colReorder = F,
+                             keys = F,
+                             scrollY = 400,
+                             scroller = T)
+    )
+  },
+    server=F
+  )
+  
   output$anno_legend_preview <- renderPlot({
-    # req(plot_values$anno_legend)
     req(clin_var_values$clin_var_data)
     
-    # print(clin_var_values$clin_var_data)
-    print(colnames(clin_var_values$clin_var_data))
+    # print(colnames(clin_var_values$clin_var_data))
     
     anno_data <- clin_var_values$clin_var_data
     make_anno <- apply(anno_data,2,function(x) {
@@ -336,14 +357,12 @@ shinyServer(function(input, output, session) {
     if (ncol(anno_data) > 0) {
       if(is.null(clin_var_values$clin_anno_colors)) {
         myanno <- HeatmapAnnotation(df=anno_data,
-        # myanno <- HeatmapAnnotation(df=testdf, 
                                     which="column",
                                     show_annotation_name = TRUE,
                                     annotation_name_side = "right")
         
       } else {
         myanno <- HeatmapAnnotation(df=clin_var_values$clin_var_data,
-                                  # myanno <- HeatmapAnnotation(df=testdf, 
                                   which="column",
                                   col = clin_var_values$clin_anno_colors,
                                   show_annotation_name = TRUE,
@@ -377,16 +396,13 @@ shinyServer(function(input, output, session) {
                                 clin_data = clin_var_values$clin_var_data,
                                 clin_data_colors = clin_var_values$clin_anno_colors
                                 )
-    # validate(
-    #   need(class(oncoplot)=="ComplexHeatmap")
-    # )
+
     oncoplot_progress$set(value = 100, message = "Returning plot...")
-    oncoplot_progress$close()
-    # print(class(myoncoplot))
     if (grepl("Heatmap",class(myoncoplot))) {
       draw(myoncoplot)
       plot_values$oncoplot <- myoncoplot
     }
+    oncoplot_progress$close()
   })  
   
   output$burden_output <- renderPlot({
