@@ -2,7 +2,7 @@
 Maf Wiz *like math wiz*
  
 ## Shiny app for plotting data from MAF files
-Add more docs here
+[Mutation Annotation Format (MAF)](https://docs.gdc.cancer.gov/Encyclopedia/pages/Mutation_Annotation_Format/) files are used for storing somatic mutation data across cohorts. For example, [The Cancer Genome Atlas (TCGA)](https://www.cancer.gov/about-nci/organization/ccg/research/structural-genomics/tcga) project has made MAF files from each project publicly available.  This app is intended to help allow quick summarization and visualization of these kind of data.
  
 ## How to run
 ### Install R and RStudio
