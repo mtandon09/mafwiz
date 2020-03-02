@@ -132,6 +132,15 @@ shinyServer(function(input, output, session) {
     
   })
   
+  observeEvent(input$go_to_vis_tab, {
+    updateTabItems(session, "tab_menu",
+                   selected = "visualizations")
+  })
+    
+  observeEvent(input$go_to_clinical_tab, {
+    updateTabItems(session, "tab_menu",
+                   selected = "get-clinical-variables")
+  })
   
   observeEvent(input$add_curr_var_data, {
     print("adding new var to clin data")
@@ -333,8 +342,8 @@ shinyServer(function(input, output, session) {
                              autoFill = F,
                              colReorder = F,
                              keys = F,
-                             scrollY = 400,
-                             scroller = T)
+                             # scrollY = 400,
+                             scroller = F)
     )
   },
     server=F

@@ -25,9 +25,7 @@ shinyUI(
           menuItem("Get Data", icon=icon("cloud-download"), tabName = "get-data", selected=T),
           menuItem("Pick Clinical Variables", tabName = "get-clinical-variables", icon = icon("search")),
           menuItem("Visualizations", icon = icon("bar-chart-o"), tabName = "visualizations"),
-          menuItem("Table Output", icon = icon("table"), tabName = "table-output"),
-          menuItem("VCF2MAF", icon = icon("random"), tabName = "vcf2maf", badgeLabel = "new",
-                   badgeColor = "green")
+          menuItem("Table Output", icon = icon("table"), tabName = "table-output")
         )
       ),
       dashboardBody(
@@ -99,7 +97,7 @@ shinyUI(
                   ),
                  tabItem(tabName="get-clinical-variables",
                           h1("Sample Information Table"),
-                          h2(actionBttn("back","Go to Visualizations", icon=icon("chart-bar"))),
+                          h2(actionBttn("go_to_vis_tab","Go to Visualizations", style="stretch",color="primary",size="sm",icon=icon("chart-bar"))),
                           tags$hr(),
                           fluidRow(
                             column(3, #offset = 1,
@@ -143,10 +141,8 @@ shinyUI(
                           withSpinner(plotOutput("anno_legend_preview", width = "80%", height = "100px"),type=1)
                           
                  ),
-                 tabItem(tabName="vcf2maf",
-                         h2("Convert VCF to MAF")
-                 ),
                  tabItem(tabName="visualizations",
+                         h2(actionBttn("go_to_clinical_tab","Add Clinical Data", style="stretch",color="primary",size="sm",icon=icon("search"))),
                           tabsetPanel(id = "viz_panel", type="tabs",
                                       tabPanel("Mutation Burden",
                                                tags$hr(),
