@@ -100,7 +100,7 @@ shinyInput <- function(FUN, len, id, ...) {
   inputs
 }
 
-TCGA_project_choices=c(
+TCGA_project_choices=sort(c(
   "[TCGA-LAML] Acute Myeloid Leukemia"="TCGA-LAML",
   "[TCGA-ACC] Adrenocortical carcinoma"="TCGA-ACC",
   "[TCGA-BLCA] Bladder Urothelial Carcinoma"="TCGA-BLCA",
@@ -138,7 +138,7 @@ TCGA_project_choices=c(
   "[TCGA-UCS] Uterine Carcinosarcoma"="TCGA-UCS",
   "[TCGA-UCEC] Uterine Corpus Endometrial Carcinoma"="TCGA-UCEC",
   "[TCGA-UVM] Uveal Melanoma"="TCGA-UVM"
-)
+))
 
 
 TCGA_pipeline_choices=c(
