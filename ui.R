@@ -1,14 +1,14 @@
 library(shiny)
 library(shinyjs)
-library(DT)
-library(shinythemes)
-library(ggbeeswarm)
-library(colourpicker)
-
 library(shinyBS)
 library(shinycssloaders)
 library(shinyWidgets)
 library(shinythemes)
+library(DT)
+library(rhandsontable)
+library(colourpicker)
+# library(shinybusy)
+
 
 source("helper_functions.oncoplot.R")
 source("helper_functions.shiny.R")
@@ -17,7 +17,6 @@ source("helper_functions.shiny.R")
 # dataset <- diamonds
 # Define UI for data upload app ----
 shinyUI(
-
   navbarPage(theme = shinytheme("flatly"),windowTitle="MafViz", selected="Upload and Filter",
              title="MafWiz", id="main_tabs",
              tags$head(
@@ -30,6 +29,7 @@ shinyUI(
                )
              ),
              useShinyjs(),
+             # add_busy_spinner(spin = "double-bounce"),
              tabPanel("Upload and Filter",
                       h1("Select a MAF file"),
                       tags$hr(),
@@ -117,7 +117,8 @@ shinyUI(
                                tags$style(HTML('table.dataTable tr:nth-child(odd) {background-color: #fafcff !important;}')),
                                tags$style(HTML('table.dataTable th {background-color: white !important;}')),
                                # dataTableOutput("clin_dat_header_table"),
-                               dataTableOutput("maf_clin_dat_table")
+                               # dataTableOutput("maf_clin_dat_table")
+                               rHandsontableOutput("maf_clin_dat_table")
                         )
                       ),
                       tags$hr(),
@@ -147,10 +148,10 @@ shinyUI(
                                            ),
                                            mainPanel(
                                              withSpinner(plotOutput("burden_output", width = "90%", height = "600px", click = NULL,
-                                                                        dblclick = NULL, hover = NULL, 
-                                                                        # hoverDelay = NULL,hoverDelayType = NULL, hoverId = NULL, clickId = NULL,
-                                                                        brush = NULL, inline = FALSE),
-                                                             type=1),
+                                                                    dblclick = NULL, hover = NULL, 
+                                                                    # hoverDelay = NULL,hoverDelayType = NULL, hoverId = NULL, clickId = NULL,
+                                                                    brush = NULL, inline = FALSE),
+                                                         type=1),
                                              tags$hr(),
                                              downloadButton("download_burdenplot_button",label="Download plot"),
                                              bsModal("download_burdenplot_modal","Download plot","download_burdenplot_button",
@@ -193,10 +194,10 @@ shinyUI(
                                            ),
                                            mainPanel(
                                              withSpinner(plotOutput("mutsig_output", width = "800px", height = "800px", click = NULL,
-                                                                        dblclick = NULL, hover = NULL, 
-                                                                        # hoverDelay = NULL,hoverDelayType = NULL, hoverId = NULL, clickId = NULL,
-                                                                        brush = NULL, inline = FALSE),
-                                                             type=1),
+                                                                    dblclick = NULL, hover = NULL, 
+                                                                    # hoverDelay = NULL,hoverDelayType = NULL, hoverId = NULL, clickId = NULL,
+                                                                    brush = NULL, inline = FALSE),
+                                                         type=1),
                                              tags$hr(),
                                              downloadButton("download_mutsigplot_button",label="Download plot"),
                                              bsModal("download_mutsigplot_modal","Download plot","download_mutsigplot_button",
@@ -237,17 +238,18 @@ shinyUI(
                                              tabsetPanel(id = "generibbon_panel", type="tabs",
                                                          tabPanel("Ribbon Plot",
                                                                   withSpinner(plotOutput("generibbon_output", width = "90%", height = "600px", click = NULL,
-                                                                                             dblclick = NULL, hover = NULL, 
-                                                                                             # hoverDelay = NULL,hoverDelayType = NULL, hoverId = NULL, clickId = NULL,
-                                                                                             brush = NULL, inline = FALSE),
-                                                                                  type=1),
+                                                                                         dblclick = NULL, hover = NULL, 
+                                                                                         # hoverDelay = NULL,hoverDelayType = NULL, hoverId = NULL, clickId = NULL,
+                                                                                         brush = NULL, inline = FALSE),
+                                                                              type=1),
                                                          ),
                                                          tabPanel("Interaction Matrix",
                                                                   # p("Plot Options"),
                                                                   withSpinner(imageOutput("genematrix_output", width = "90%", height = "600px", click = NULL,
-                                                                                         dblclick = NULL, hover = NULL, hoverDelay = NULL,
-                                                                                         hoverDelayType = NULL, brush = NULL, clickId = NULL,
-                                                                                         hoverId = NULL, inline = FALSE), type=1)
+                                                                                          dblclick = NULL, hover = NULL, 
+                                                                                          # hoverDelay = NULL,hoverDelayType = NULL, hoverId = NULL, clickId = NULL,
+                                                                                          brush = NULL, inline = FALSE),
+                                                                              type=1),
                                                          )
                                              ),
                                              
@@ -263,7 +265,10 @@ shinyUI(
                       )
              ),
              tabPanel("Table Output",
-                      p("Nothing here yet")
+                      # p("Nothing here yet")
+                      h1("Variant Table"),
+                      tags$hr(),
+                      withSpinner(rHandsontableOutput("output_variant_table"),type=1)
              ),
              navbarMenu("More",
                         tabPanel("Stuff to add in the future",
