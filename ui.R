@@ -146,10 +146,11 @@ shinyUI(
                                                            choices = c("Barplot", "Dotplot"))
                                            ),
                                            mainPanel(
-                                             withSpinner(plotOutput("burden_output", width = "90%", height = "600px", click = NULL,
-                                                                    dblclick = NULL, hover = NULL, hoverDelay = NULL,
-                                                                    hoverDelayType = NULL, brush = NULL, clickId = NULL,
-                                                                    hoverId = NULL, inline = FALSE), type=1),
+                                             withSpinner(plotOutput("burden_output", width = "90%", height = "600px")#, click = NULL,
+#                                                                     dblclick = NULL, hover = NULL, hoverDelay = NULL,
+#                                                                     hoverDelayType = NULL, brush = NULL, clickId = NULL,
+#                                                                     hoverId = NULL, inline = FALSE), 
+                                                         type=1),
                                              tags$hr(),
                                              downloadButton("download_burdenplot_button",label="Download plot"),
                                              bsModal("download_burdenplot_modal","Download plot","download_burdenplot_button",
@@ -191,10 +192,11 @@ shinyUI(
                                                         checkboxInput("use_syn_mut", "Use Synonymous Mutations?", FALSE)
                                            ),
                                            mainPanel(
-                                             withSpinner(plotOutput("mutsig_output", width = "800px", height = "800px", click = NULL,
-                                                                    dblclick = NULL, hover = NULL, hoverDelay = NULL,
-                                                                    hoverDelayType = NULL, brush = NULL, clickId = NULL,
-                                                                    hoverId = NULL, inline = FALSE), type=1),
+                                             withSpinner(plotOutput("mutsig_output", width = "800px", height = "800px")#, click = NULL,
+#                                                                     dblclick = NULL, hover = NULL, hoverDelay = NULL,
+#                                                                     hoverDelayType = NULL, brush = NULL, clickId = NULL,
+#                                                                     hoverId = NULL, inline = FALSE), 
+                                                         type=1),
                                              tags$hr(),
                                              downloadButton("download_mutsigplot_button",label="Download plot"),
                                              bsModal("download_mutsigplot_modal","Download plot","download_mutsigplot_button",
@@ -234,10 +236,11 @@ shinyUI(
                                            mainPanel(
                                              tabsetPanel(id = "generibbon_panel", type="tabs",
                                                          tabPanel("Ribbon Plot",
-                                                                  withSpinner(plotOutput("generibbon_output", width = "90%", height = "600px", click = NULL,
-                                                                                         dblclick = NULL, hover = NULL, hoverDelay = NULL,
-                                                                                         hoverDelayType = NULL, brush = NULL, clickId = NULL,
-                                                                                         hoverId = NULL, inline = FALSE), type=1)
+                                                                  withSpinner(plotOutput("generibbon_output", width = "90%", height = "600px")#, click = NULL,
+#                                                                     dblclick = NULL, hover = NULL, hoverDelay = NULL,
+#                                                                     hoverDelayType = NULL, brush = NULL, clickId = NULL,
+#                                                                     hoverId = NULL, inline = FALSE), 
+                                                                              type=1),
                                                          ),
                                                          tabPanel("Interaction Matrix",
                                                                   # p("Plot Options"),
