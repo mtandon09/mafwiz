@@ -10,7 +10,11 @@ library(colourpicker)
 # library(shinybusy)
 library(shinydashboard)
 
+
+# source("https://gist.githubusercontent.com/mtandon09/4a870bf4addbe46e784059bce0e5d8d6/raw/dc2927aa3e6a09b34a39f8346b5ebcfd41ce2a6d/install_R_dependencies.R")
+
 source("helper_functions.oncoplot.R")
+source("helper_functions.tcga.R")
 source("helper_functions.shiny.R")
 
 shinyUI(
@@ -102,13 +106,15 @@ shinyUI(
                           fluidRow(
                             column(3, #offset = 1,
                                    h4("Find clinical variable"),
-                                   p("try searching for age, gender, stage, etc."),
                                    # actionButton("add_curr_var_data","Add to sample table"),
-                                   actionBttn("add_curr_var_data","Add to sample table", icon=icon("plus-square"), style="fill", size="sm"),
+                                   actionBttn("load_preset_clinical_colors","Load default TCGA variables", icon=icon("plus-square"), style="fill", size="md", color="success"),
                                    tags$hr(),
                                    selectInput("select_curr_clin_var", "Column Name",
                                                choices=c(), selected=NULL,
                                                selectize = T),
+                                   p("Try searching for age, gender, stage, etc."),
+                                   actionBttn("add_curr_var_data","Add to sample table", icon=icon("plus-square"), style="fill", size="sm"),
+                                   
                                    tags$hr(),
                                    DTOutput("curr_clin_var_table", height = "300px")
                             ),
@@ -152,9 +158,7 @@ shinyUI(
                                                ),
                                                mainPanel(
                                                  withSpinner(plotOutput("burden_output", width = "90%", height = "600px", click = NULL,
-                                                                        dblclick = NULL, hover = NULL, hoverDelay = NULL,
-                                                                        hoverDelayType = NULL, brush = NULL, clickId = NULL,
-                                                                        hoverId = NULL, inline = FALSE), type=1),
+                                                                        dblclick = NULL, hover = NULL, brush = NULL, inline = FALSE), type=1),
                                                  tags$hr(),
                                                  downloadButton("download_burdenplot_button",label="Download plot"),
                                                  bsModal("download_burdenplot_modal","Download plot","download_burdenplot_button",
@@ -197,9 +201,7 @@ shinyUI(
                                                ),
                                                mainPanel(
                                                  withSpinner(plotOutput("mutsig_output", width = "800px", height = "800px", click = NULL,
-                                                                        dblclick = NULL, hover = NULL, hoverDelay = NULL,
-                                                                        hoverDelayType = NULL, brush = NULL, clickId = NULL,
-                                                                        hoverId = NULL, inline = FALSE), type=1),
+                                                                        dblclick = NULL, hover = NULL, brush = NULL, inline = FALSE), type=1),
                                                  tags$hr(),
                                                  downloadButton("download_mutsigplot_button",label="Download plot"),
                                                  bsModal("download_mutsigplot_modal","Download plot","download_mutsigplot_button",
@@ -237,16 +239,12 @@ shinyUI(
                                                  tabsetPanel(id = "generibbon_panel", type="tabs",
                                                              tabPanel("Ribbon Plot",
                                                                       withSpinner(plotOutput("generibbon_output", width = "90%", height = "600px", click = NULL,
-                                                                                             dblclick = NULL, hover = NULL, hoverDelay = NULL,
-                                                                                             hoverDelayType = NULL, brush = NULL, clickId = NULL,
-                                                                                             hoverId = NULL, inline = FALSE), type=1)
+                                                                                             dblclick = NULL, hover = NULL, brush = NULL, inline = FALSE), type=1)
                                                              ),
                                                              tabPanel("Interaction Matrix",
                                                                       # p("Plot Options"),
                                                                       withSpinner(imageOutput("genematrix_output", width = "90%", height = "600px", click = NULL,
-                                                                                             dblclick = NULL, hover = NULL, hoverDelay = NULL,
-                                                                                             hoverDelayType = NULL, brush = NULL, clickId = NULL,
-                                                                                             hoverId = NULL, inline = FALSE), type=1)
+                                                                                              dblclick = NULL, hover = NULL, brush = NULL, inline = FALSE), type=1)
                                                              )
                                                  ),
                                                  

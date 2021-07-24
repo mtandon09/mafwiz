@@ -21,13 +21,17 @@ library(TCGAbiolinks)
 library(NMF)
 library(MutationalPatterns)
 
-library(BSgenome.Hsapiens.UCSC.hg38)
-library(BSgenome.Hsapiens.UCSC.hg19)
+# library(BSgenome.Hsapiens.UCSC.hg38)
+# library(BSgenome.Hsapiens.UCSC.hg19)
 
 source("helper_functions.oncoplot.R")
+source("helper_functions.tcga.R")
 source("helper_functions.shiny.R")
 
-options(shiny.maxRequestSize=1000*1024^2)  ## Increase upload limit to 1G 
+## Increase upload limit
+max_upload_gb=1
+options(shiny.maxRequestSize=(max_upload_gb*1000)*1024^2) 
+
 
 shinyServer(function(input, output, session) {
     
@@ -44,6 +48,8 @@ shinyServer(function(input, output, session) {
   clin_var_values$clin_data_columns <- NULL
   clin_var_values$clin_anno_colors <- NULL
   
+  
+  ## Button to download TCGA MAF 
   observeEvent(input$get_tcga_data, {
     req(input$tcga_dataset)
     req(input$tcga_pipeline)
@@ -55,22 +61,21 @@ shinyServer(function(input, output, session) {
       if (!dir.exists(dirname(maf_file))) {dir.create(dirname(maf_file), recursive = T)}
       maf_download_progress <- shiny::Progress$new(session,max=100)
       maf_download_progress$set(value = 10, message = paste0("Downloading ",input$tcga_dataset,"..."))
-      tcga_maf <- GDCquery_Maf(gsub("TCGA-","",input$tcga_dataset), 
-                               pipelines = input$tcga_pipeline, 
-                               directory = save_folder)
-      tcga_maf$Tumor_Sample_Barcode_original <- tcga_maf$Tumor_Sample_Barcode
-      tcga_maf$Tumor_Sample_Barcode <-unlist(lapply(strsplit(tcga_maf$Tumor_Sample_Barcode, "-"), function(x) {paste0(x[1:3], collapse="-")}))
-      write.table(tcga_maf, file=maf_file, quote=F, sep="\t", row.names = F, col.names = T)
-      maf_download_progress$set(value = 90, message = paste0("Finished downloading ",input$tcga_dataset,"..."))
+      raw_maf <- get_tcga_data(tcga_dataset = gsub("TCGA-","",input$tcga_dataset),
+                    save_folder=save_folder,
+                    variant_caller = input$tcga_pipeline)
+      
+      maf_download_progress$set(value = 99, message = paste0("Finishing ",input$tcga_dataset,"..."))
       maf_download_progress$close()
     }
-    
-    raw_maf <- read_maf(session=session, maf_file)
+    tcga_clinical_file=file.path(save_folder,input$tcga_dataset,paste0(input$tcga_dataset,".clinical.txt"))
+    clin_var_values$clin_data_file <- tcga_clinical_file
     
     plot_values$raw_maf_obj <- raw_maf
     click("get_tcga_clinical_data")
     click("run_apply_filters")
   })
+  
   
   observeEvent(input$get_tcga_clinical_data, {
     req(input$tcga_dataset)
@@ -82,6 +87,7 @@ shinyServer(function(input, output, session) {
     if (! file.exists(tcga_clinical_file)) {
       if (!dir.exists(dirname(tcga_clinical_file))) {dir.create(dirname(tcga_clinical_file), recursive = T)}
       tcga_clinical <- GDCquery_clinic(project = input$tcga_dataset, type = "clinical")
+      tcga_clinical$Tumor_Sample_Barcode <- tcga_clinical$bcr_patient_barcode
       write.table(tcga_clinical, file=tcga_clinical_file, quote=T, sep="\t", row.names = F, col.names = T)
     }
     clin_var_values$clin_data_file <- tcga_clinical_file
@@ -124,6 +130,9 @@ shinyServer(function(input, output, session) {
     
     clin_var_values$clin_data_upload <- clin_data_upload
     
+    updateSelectInput(session,"color_var_picker","Select Variable",choices=colnames(clin_var_values$clin_data_upload))
+    
+    
     updateSelectInput(session, "select_curr_clin_var", choices = colnames(clin_var_values$clin_data_upload))
     
     updateTabItems(session, "tab_menu",
@@ -142,9 +151,27 @@ shinyServer(function(input, output, session) {
                    selected = "get-clinical-variables")
   })
   
+  observeEvent(input$load_preset_clinical_colors, {
+    preset_colors <- tcga_clinical_colors(clin_var_values$clin_data_upload)
+    if (length(preset_colors) > 0) {
+      # clin_var_values$clin_var_data <- clin_var_values$clin_var_data[,match(names(preset_colors), colnames(clin_var_values$clin_var_data))]
+      curr_data_table <- clin_var_values$clin_data_upload[,names(preset_colors),drop=F]
+    }
+    
+    
+    if(is.null(clin_var_values$clin_var_data)){
+      clin_var_values$clin_var_data <- curr_data_table
+    } else {
+      clin_var_values$clin_var_data <- cbind(clin_var_values$clin_var_data,curr_data_table)
+    }
+    updateSelectInput(session,"color_var_picker","Select Variable",choices=colnames(clin_var_values$clin_var_data))
+  })
+  
   observeEvent(input$add_curr_var_data, {
     print("adding new var to clin data")
     
+    clin_var_values$clin_var_data <- clin_var_values$clin_data_upload
+
     curr_data <- clin_var_values$clin_data_upload
     # curr_data <- input$maf_clin_dat_table_cell_info
     print(input$maf_clin_dat_table_cell_info)
