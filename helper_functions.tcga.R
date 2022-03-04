@@ -3,6 +3,11 @@ get_tcga_data <- function(tcga_dataset="ACC",save_folder=file.path("data"), vari
   
   require(TCGAbiolinks)
   message("Getting TCGA MAF...")
+  if (length(tcga_dataset) > 1) {
+    allmafs <- lapply(tcga_dataset, get_tcga_data, save_folder=save_folder, variant_caller=variant_caller)
+    mergedmafs <- merge_mafs(allmafs)
+    return(mergedmafs)
+  }
   tcga_dataset <- gsub("TCGA-","",tcga_dataset)
   save_folder_base=file.path(save_folder,paste0("TCGA-",tcga_dataset))
   save_folder=file.path(save_folder_base,variant_caller)

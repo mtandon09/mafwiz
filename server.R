@@ -24,7 +24,8 @@ library(MutationalPatterns)
 # library(BSgenome.Hsapiens.UCSC.hg38)
 # library(BSgenome.Hsapiens.UCSC.hg19)
 
-source("helper_functions.oncoplot.R")
+# source("helper_functions.oncoplot.R")
+source("~/Documents/helper_functions/helper_functions.oncoplot.R")
 source("helper_functions.tcga.R")
 source("helper_functions.shiny.R")
 
@@ -68,11 +69,12 @@ shinyServer(function(input, output, session) {
       maf_download_progress$set(value = 99, message = paste0("Finishing ",input$tcga_dataset,"..."))
       maf_download_progress$close()
     }
-    tcga_clinical_file=file.path(save_folder,input$tcga_dataset,paste0(input$tcga_dataset,".clinical.txt"))
-    clin_var_values$clin_data_file <- tcga_clinical_file
+    # tcga_clinical_file=file.path(save_folder,input$tcga_dataset,paste0(input$tcga_dataset,".clinical.txt"))
+    # clin_var_values$clin_data_file <- tcga_clinical_file
     
+    clin_var_values$clin_data_upload <- raw_maf@clinical.data
     plot_values$raw_maf_obj <- raw_maf
-    click("get_tcga_clinical_data")
+    # click("get_tcga_clinical_data")
     click("run_apply_filters")
   })
   
@@ -117,7 +119,6 @@ shinyServer(function(input, output, session) {
   
   observe({
     req(clin_var_values$clin_data_file)
-    click("clear_clinical_data")
     clinical_file <- clin_var_values$clin_data_file 
     file_type=tools::file_ext(clinical_file)
     if (grepl("xls*",file_type)) {
@@ -130,15 +131,17 @@ shinyServer(function(input, output, session) {
     
     clin_var_values$clin_data_upload <- clin_data_upload
     
-    updateSelectInput(session,"color_var_picker","Select Variable",choices=colnames(clin_var_values$clin_data_upload))
-    
-    
-    updateSelectInput(session, "select_curr_clin_var", choices = colnames(clin_var_values$clin_data_upload))
-    
-    updateTabItems(session, "tab_menu",
-                      selected = "get-clinical-variables")
 
     
+  })
+  
+  observe({
+    req(clin_var_values$clin_data_upload)
+    click("clear_clinical_data")
+    updateSelectInput(session,"color_var_picker","Select Variable",choices=colnames(clin_var_values$clin_data_upload))
+    updateSelectInput(session, "select_curr_clin_var", choices = colnames(clin_var_values$clin_data_upload))
+    updateTabItems(session, "tab_menu",
+                      selected = "get-clinical-variables")
   })
   
   observeEvent(input$go_to_vis_tab, {
@@ -153,9 +156,10 @@ shinyServer(function(input, output, session) {
   
   observeEvent(input$load_preset_clinical_colors, {
     preset_colors <- tcga_clinical_colors(clin_var_values$clin_data_upload)
+    print(preset_colors)
     if (length(preset_colors) > 0) {
       # clin_var_values$clin_var_data <- clin_var_values$clin_var_data[,match(names(preset_colors), colnames(clin_var_values$clin_var_data))]
-      curr_data_table <- clin_var_values$clin_data_upload[,names(preset_colors),drop=F]
+      curr_data_table <- clin_var_values$clin_data_upload[,names(preset_colors)]
     }
     
     
@@ -176,7 +180,7 @@ shinyServer(function(input, output, session) {
     # curr_data <- input$maf_clin_dat_table_cell_info
     print(input$maf_clin_dat_table_cell_info)
     curr_col <- match(input$select_curr_clin_var,colnames(clin_var_values$clin_data_upload))
-    curr_data_table <- curr_data[,curr_col,drop=F]
+    curr_data_table <- curr_data[,..curr_col,drop=F]
     
     if(is.null(clin_var_values$clin_var_data)){
       clin_var_values$clin_var_data <- curr_data_table
@@ -319,7 +323,7 @@ shinyServer(function(input, output, session) {
     req(clin_var_values$clin_data_upload)
     curr_data <- clin_var_values$clin_data_upload
     curr_col <- match(input$select_curr_clin_var,colnames(clin_var_values$clin_data_upload))
-    curr_data_table <- curr_data[,curr_col,drop=F]
+    curr_data_table <- curr_data[,..curr_col,drop=F]
     datatable(curr_data_table,
               rownames=F,
               editable=F,

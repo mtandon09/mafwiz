@@ -42,8 +42,9 @@ shinyUI(
                           fluidRow(
                             column(6, #offset = 1,
                                    h4("Use TCGA data"),
-                                   selectizeInput("tcga_dataset", "TCGA Dataset",
-                                               choices=TCGA_project_choices),
+                                   selectizeInput("tcga_dataset", "TCGA Dataset", 
+                                                  multiple = T, selected = TCGA_project_choices[1],
+                                                  choices=TCGA_project_choices),
                                    # tags$style(type='text/css', ".selectize-input { font-size: 12px; line-height: 20px;}"),
                                    selectInput("tcga_pipeline", "Variant Calling Pipeline",
                                                 choices=TCGA_pipeline_choices, selected="mutect2",
