@@ -13,8 +13,9 @@ library(shinydashboard)
 
 # source("https://gist.githubusercontent.com/mtandon09/4a870bf4addbe46e784059bce0e5d8d6/raw/dc2927aa3e6a09b34a39f8346b5ebcfd41ce2a6d/install_R_dependencies.R")
 
-source("helper_functions.oncoplot.R")
-source("helper_functions.tcga.R")
+# source("~/Documents/helper_functions/helper_functions.oncoplot.R")
+# source("https://raw.githubusercontent.com/mtandon09/mt_helpers/main/helper_functions.oncoplot.R")
+# source("helper_functions.tcga.R")
 source("helper_functions.shiny.R")
 
 shinyUI(
@@ -26,9 +27,9 @@ shinyUI(
         sidebarMenu(
           # Setting id makes input$tabs give the tabName of currently-selected tab
           id = "tab_menu",
-          menuItem("Get Data", icon=icon("cloud-download"), tabName = "get-data", selected=T),
+          menuItem("Get Data", icon=icon("cloud-download-alt"), tabName = "get-data", selected=T),
           menuItem("Pick Clinical Variables", tabName = "get-clinical-variables", icon = icon("search")),
-          menuItem("Visualizations", icon = icon("bar-chart-o"), tabName = "visualizations"),
+          menuItem("Visualizations", icon = icon("sliders-h"), tabName = "visualizations"),
           menuItem("Table Output", icon = icon("table"), tabName = "table-output")
         )
       ),
@@ -49,7 +50,7 @@ shinyUI(
                                    selectInput("tcga_pipeline", "Variant Calling Pipeline",
                                                 choices=TCGA_pipeline_choices, selected="mutect2",
                                                 selectize = F),
-                                   actionButton("get_tcga_data","Download", icon=icon("cloud-download")),
+                                   actionButton("get_tcga_data","Download", icon=icon("cloud-download-alt")),
                             ),
                             column(4,
                                    h4("Use your own data"),
@@ -70,7 +71,7 @@ shinyUI(
                           fluidRow(
                             column(6, #offset = 1,
                                    h4("Get TCGA clinical data"),
-                                   actionButton("get_tcga_clinical_data","Download", icon=icon("cloud-download")),
+                                   actionButton("get_tcga_clinical_data","Download", icon=icon("cloud-download-alt")),
                             ),
                             column(4,
                                    h4("Use your own data"),
@@ -239,7 +240,8 @@ shinyUI(
                                                mainPanel(
                                                  tabsetPanel(id = "generibbon_panel", type="tabs",
                                                              tabPanel("Ribbon Plot",
-                                                                      withSpinner(plotOutput("generibbon_output", width = "90%", height = "600px", click = NULL,
+                                                                      # withSpinner(plotOutput("generibbon_output", width = "90%", height = "600px", click = NULL,
+                                                                      withSpinner(imageOutput("generibbon_output", width = "90%", height = "600px", click = NULL,
                                                                                              dblclick = NULL, hover = NULL, brush = NULL, inline = FALSE), type=1)
                                                              ),
                                                              tabPanel("Interaction Matrix",

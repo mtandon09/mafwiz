@@ -24,9 +24,11 @@ library(MutationalPatterns)
 # library(BSgenome.Hsapiens.UCSC.hg38)
 # library(BSgenome.Hsapiens.UCSC.hg19)
 
-# source("helper_functions.oncoplot.R")
-source("https://raw.githubusercontent.com/mtandon09/mt_helpers/main/helper_functions.oncoplot.R")
-source("helper_functions.tcga.R")
+# source("~/Documents/helper_functions/helper_functions.oncoplot.R")
+# source("https://raw.githubusercontent.com/mtandon09/mt_helpers/main/helper_functions.oncoplot.R")
+source("https://raw.githubusercontent.com/mtandon09/mt_helpers/main/helper_functions.mutsig.R")
+source("https://raw.githubusercontent.com/mtandon09/mt_helpers/main/helper_functions.tcga.R")
+# source("helper_functions.tcga.R")
 source("helper_functions.shiny.R")
 
 ## Increase upload limit
@@ -39,7 +41,8 @@ shinyServer(function(input, output, session) {
   plot_values <- reactiveValues()
   plot_values$raw_maf_obj <- NULL
   plot_values$maf_obj <- NULL
-  plot_values$gene_interaction_pdf <- "maftools_somatic_interactions.png"
+  plot_values$gene_interaction_image1 <- "maftools_somatic_interactions.png"
+  plot_values$gene_interaction_image2 <- "maftools_somatic_interactions.maftools.png"
   plot_values$output_table <- NULL
   
   clin_var_values <- reactiveValues()
@@ -58,20 +61,17 @@ shinyServer(function(input, output, session) {
     save_folder="data/tcga_data"
     maf_file=file.path(save_folder,input$tcga_dataset,paste0(input$tcga_dataset,".",input$tcga_pipeline,".maf"))
     
-    if (! file.exists(maf_file)) {
-      if (!dir.exists(dirname(maf_file))) {dir.create(dirname(maf_file), recursive = T)}
-      maf_download_progress <- shiny::Progress$new(session,max=100)
-      maf_download_progress$set(value = 10, message = paste0("Downloading ",input$tcga_dataset,"..."))
-      raw_maf <- get_tcga_data(tcga_dataset = gsub("TCGA-","",input$tcga_dataset),
-                    save_folder=save_folder,
-                    variant_caller = input$tcga_pipeline)
-      
-      maf_download_progress$set(value = 99, message = paste0("Finishing ",input$tcga_dataset,"..."))
-      maf_download_progress$close()
-    }
+    maf_download_progress <- shiny::Progress$new(session,max=100)
+    maf_download_progress$set(value = 10, message = paste0("Fetching data ",input$tcga_dataset,"..."))
+    raw_maf <- get_tcga_data(tcga_dataset = gsub("TCGA-","",input$tcga_dataset),
+                  save_folder=save_folder,
+                  variant_caller = input$tcga_pipeline)
+    
+    maf_download_progress$set(value = 99, message = paste0("Finishing ",input$tcga_dataset,"..."))
+    maf_download_progress$close()
     # tcga_clinical_file=file.path(save_folder,input$tcga_dataset,paste0(input$tcga_dataset,".clinical.txt"))
     # clin_var_values$clin_data_file <- tcga_clinical_file
-    
+    # browser()
     clin_var_values$clin_data_upload <- raw_maf@clinical.data
     plot_values$raw_maf_obj <- raw_maf
     # click("get_tcga_clinical_data")
@@ -79,22 +79,22 @@ shinyServer(function(input, output, session) {
   })
   
   
-  observeEvent(input$get_tcga_clinical_data, {
-    req(input$tcga_dataset)
-    print("get tcga clin data")
-    click("clear_clinical_data")
-    
-    save_folder="data/tcga_data"
-    tcga_clinical_file=file.path(save_folder,input$tcga_dataset,paste0(input$tcga_dataset,".clinical.txt"))
-    if (! file.exists(tcga_clinical_file)) {
-      if (!dir.exists(dirname(tcga_clinical_file))) {dir.create(dirname(tcga_clinical_file), recursive = T)}
-      tcga_clinical <- GDCquery_clinic(project = input$tcga_dataset, type = "clinical")
-      tcga_clinical$Tumor_Sample_Barcode <- tcga_clinical$bcr_patient_barcode
-      write.table(tcga_clinical, file=tcga_clinical_file, quote=T, sep="\t", row.names = F, col.names = T)
-    }
-    clin_var_values$clin_data_file <- tcga_clinical_file
-    
-  })
+  # observeEvent(input$get_tcga_clinical_data, {
+  #   req(input$tcga_dataset)
+  #   print("get tcga clin data")
+  #   click("clear_clinical_data")
+  #   
+  #   save_folder="data/tcga_data"
+  #   tcga_clinical_file=file.path(save_folder,input$tcga_dataset,paste0(input$tcga_dataset,".clinical.txt"))
+  #   if (! file.exists(tcga_clinical_file)) {
+  #     if (!dir.exists(dirname(tcga_clinical_file))) {dir.create(dirname(tcga_clinical_file), recursive = T)}
+  #     tcga_clinical <- GDCquery_clinic(project = input$tcga_dataset, type = "clinical")
+  #     tcga_clinical$Tumor_Sample_Barcode <- tcga_clinical$bcr_patient_barcode
+  #     write.table(tcga_clinical, file=tcga_clinical_file, quote=T, sep="\t", row.names = F, col.names = T)
+  #   }
+  #   clin_var_values$clin_data_file <- tcga_clinical_file
+  #   
+  # })
     
   observeEvent(input$sample_file_upload, {
     req(input$tcga_dataset)
@@ -117,23 +117,23 @@ shinyServer(function(input, output, session) {
   
   
   
-  observe({
-    req(clin_var_values$clin_data_file)
-    clinical_file <- clin_var_values$clin_data_file 
-    file_type=tools::file_ext(clinical_file)
-    if (grepl("xls*",file_type)) {
-      clin_data_upload <- read.xlsx(clinical_file)
-    } else if (grepl("txt|tsv", file_type)) {
-      clin_data_upload <- read.table(clinical_file, sep="\t", header=T)
-    } else {
-      stop(paste0("Don't know what to do with file extension: ", file_type))
-    }
-    
-    clin_var_values$clin_data_upload <- clin_data_upload
-    
-
-    
-  })
+  # observe({
+  #   req(clin_var_values$clin_data_file)
+  #   clinical_file <- clin_var_values$clin_data_file 
+  #   file_type=tools::file_ext(clinical_file)
+  #   if (grepl("xls*",file_type)) {
+  #     clin_data_upload <- read.xlsx(clinical_file)
+  #   } else if (grepl("txt|tsv", file_type)) {
+  #     clin_data_upload <- read.table(clinical_file, sep="\t", header=T)
+  #   } else {
+  #     stop(paste0("Don't know what to do with file extension: ", file_type))
+  #   }
+  #   
+  #   clin_var_values$clin_data_upload <- clin_data_upload
+  #   
+  # 
+  #   
+  # })
   
   observe({
     req(clin_var_values$clin_data_upload)
@@ -155,38 +155,38 @@ shinyServer(function(input, output, session) {
   })
   
   observeEvent(input$load_preset_clinical_colors, {
+    # browser()
     preset_colors <- tcga_clinical_colors(clin_var_values$clin_data_upload)
-    print(preset_colors)
+    new_cols <- "Tumor_Sample_Barcode"
+    # print(preset_colors)
     if (length(preset_colors) > 0) {
       # clin_var_values$clin_var_data <- clin_var_values$clin_var_data[,match(names(preset_colors), colnames(clin_var_values$clin_var_data))]
-      curr_data_table <- clin_var_values$clin_data_upload[,names(preset_colors)]
+      new_cols <- c(new_cols, names(preset_colors))
     }
     
+    new_cols <- union(new_cols, colnames(clin_var_values$clin_var_data))
+    # if(is.null(clin_var_values$clin_var_data)){
+    #   if (! "Tumor_Sample_Barcode" %in% colnames(curr_data_table)) {
+    #     curr_data_table <- cbind(clin_var_values$clin_data_upload[,"Tumor_Sample_Barcode"],
+    #                              curr_data_table)
+    #   }
+    #   clin_var_values$clin_var_data <- curr_data_table
+    # } else {
+    #   clin_var_values$clin_var_data <- cbind(clin_var_values$clin_var_data,curr_data_table)
+    # }
+    clin_var_values$clin_var_data <- clin_var_values$clin_data_upload[,..new_cols]
     
-    if(is.null(clin_var_values$clin_var_data)){
-      clin_var_values$clin_var_data <- curr_data_table
-    } else {
-      clin_var_values$clin_var_data <- cbind(clin_var_values$clin_var_data,curr_data_table)
-    }
     updateSelectInput(session,"color_var_picker","Select Variable",choices=colnames(clin_var_values$clin_var_data))
   })
   
   observeEvent(input$add_curr_var_data, {
     print("adding new var to clin data")
     
-    clin_var_values$clin_var_data <- clin_var_values$clin_data_upload
-
-    curr_data <- clin_var_values$clin_data_upload
-    # curr_data <- input$maf_clin_dat_table_cell_info
-    print(input$maf_clin_dat_table_cell_info)
-    curr_col <- match(input$select_curr_clin_var,colnames(clin_var_values$clin_data_upload))
-    curr_data_table <- curr_data[,..curr_col,drop=F]
+    # clin_var_values$clin_var_data <- clin_var_values$clin_data_upload
+    new_cols <- unique(c("Tumor_Sample_Barcode", input$select_curr_clin_var))
+    new_cols <- union(new_cols, colnames(clin_var_values$clin_var_data))
+    clin_var_values$clin_var_data <- clin_var_values$clin_data_upload[,..new_cols]
     
-    if(is.null(clin_var_values$clin_var_data)){
-      clin_var_values$clin_var_data <- curr_data_table
-    } else {
-      clin_var_values$clin_var_data <- cbind(clin_var_values$clin_var_data,curr_data_table)
-    }
     updateSelectInput(session,"color_var_picker","Select Variable",choices=colnames(clin_var_values$clin_var_data))
     
     
@@ -236,8 +236,8 @@ shinyServer(function(input, output, session) {
     
     plot_values$output_table <- make_variant_table(plot_values$maf_obj)
     
-    updateTabItems(session, "tab_menu",
-                      selected = "visualizations")
+    # updateTabItems(session, "tab_menu",
+    #                   selected = "visualizations")
 
     
   })
@@ -253,8 +253,39 @@ shinyServer(function(input, output, session) {
     click("run_apply_filters")
   })
   
+  
+  output$genematrix_output <- renderImage({
+    validate(need(file.exists(plot_values$gene_interaction_image2),"No plot file found."))
+    print(plot_values$gene_interaction_image2)
+    width  <- session$clientData$output_image_width
+    height <- session$clientData$output_image_height
+    list(
+      src = plot_values$gene_interaction_image2,
+      contentType = "image/png",
+      width = width,
+      height = height,
+      alt = "Output from maftools' somaticInteractions()"
+    )
+  },deleteFile=F)
+  
+  output$generibbon_output <- renderImage({
+    validate(need(file.exists(plot_values$gene_interaction_image1),"No plot file found."))
+    print(plot_values$gene_interaction_image1)
+    width  <- session$clientData$output_image_width
+    height <- session$clientData$output_image_height
+    list(
+      src = plot_values$gene_interaction_image1,
+      contentType = "image/png",
+      width = width,
+      height = height,
+      alt = "Chord diagram of co-mutated genes"
+    )
+  },deleteFile=F)
+  
+  
   observeEvent(input$plot_generibbon, {
-    output$generibbon_output <- renderPlot({
+    # output$generibbon_output <- renderPlot({
+    # output$generibbon_output <- renderImage({
       req(plot_values$maf_obj)
       
       mycoloropt <- NULL
@@ -267,7 +298,7 @@ shinyServer(function(input, output, session) {
                        topN=isolate(input$gene_comut_topN),
                        pval_low=isolate(input$gene_comut_pvalLow), 
                        pval_high=isolate(input$gene_comut_pvalHigh),
-                       plot_file=isolate(plot_values$gene_interaction_pdf),
+                       plot_file=isolate(plot_values$gene_interaction_image1),
                        plot_frac_mut_axis=TRUE,
                        scale_ribbon_to_fracmut=TRUE)
       
@@ -282,19 +313,21 @@ shinyServer(function(input, output, session) {
         ribbon_progress$set(value = value, message = detail)
       }
       
-      make_single_ribbon_plot(plotopts$maf_obj, 
+      myfile <- make_single_ribbon_plot(plotopts$maf_obj, 
                               ribbon_color=plotopts$ribbon_color, 
                               topN=plotopts$topN,
                               pval_low=plotopts$pval_low, 
                               pval_high=plotopts$pval_high,
-                              plot_file=plotopts$plot_file,
+                              save_name=plotopts$plot_file,
                               progress_func=plotopts$progress_func,
                               plot_frac_mut_axis=plotopts$plot_frac_mut_axis,
                               scale_ribbon_to_fracmut=plotopts$scale_ribbon_to_fracmut)  
       
       ribbon_progress$set(value = 100, message = "Rendering plot...")
       ribbon_progress$close()
-    })
+      
+      plot_values$gene_interaction_image1 <- plot_values$gene_interaction_image1
+    # })
     
   })
   
@@ -344,7 +377,8 @@ shinyServer(function(input, output, session) {
   output$maf_clin_dat_table <- renderRHandsontable({
     req(clin_var_values$clin_var_data)
     curr_data <- clin_var_values$clin_var_data
-    curr_data <- curr_data[,!duplicated(colnames(curr_data)), drop=F]
+    dropcols <- colnames(curr_data)[!duplicated(colnames(curr_data))]
+    curr_data <- curr_data[,..dropcols, drop=F]
     
     rhandsontable(curr_data) %>%
       hot_table(highlightCol = TRUE, highlightRow = TRUE)
@@ -386,14 +420,16 @@ shinyServer(function(input, output, session) {
     # print(colnames(clin_var_values$clin_var_data))
     
     anno_data <- clin_var_values$clin_var_data
-    make_anno <- apply(anno_data,2,function(x) {
+    make_anno <- unlist(lapply(anno_data,function(x) {
       ret_val=TRUE
       if (is.factor(x) && levels(x)>10) {
         ret_val=FALSE 
       }
       return(ret_val)
-    })
-    anno_data <- anno_data[,make_anno, drop=F]
+    }))
+    # browser()
+    currcols <- colnames(anno_data)[make_anno]
+    anno_data <- anno_data[, ..currcols, drop=F]
     if (ncol(anno_data) > 0) {
       if(is.null(clin_var_values$clin_anno_colors)) {
         myanno <- HeatmapAnnotation(df=anno_data,
@@ -432,8 +468,10 @@ shinyServer(function(input, output, session) {
     req(plot_values$maf_obj)
     oncoplot_progress <- shiny::Progress$new(session,max=100)
     oncoplot_progress$set(value = 5, message = "Making oncoplot...")
+    annodat <- clin_var_values$clin_var_data
+    colnames(annodat) <- gsub("submitter_id","Tumor_Sample_Barcode", colnames(annodat))
     myoncoplot <- make_oncoplot(plot_values$maf_obj, cohort_freq_thresh = input$onco_cohort_frac,
-                                clin_data = clin_var_values$clin_var_data,
+                                clin_data = annodat,
                                 clin_data_colors = clin_var_values$clin_anno_colors
                                 )
 
@@ -470,10 +508,12 @@ shinyServer(function(input, output, session) {
       }
       mutsig_progress$set(value = value, message = detail)
     }
-    # print(input$genome_select)
+    
+    annodat <- clin_var_values$clin_var_data
+    colnames(annodat) <- gsub("submitter_id","Tumor_Sample_Barcode", colnames(annodat))
     mymutsigplot <- make_mut_signature_heatmap(plot_values$maf_obj, 
                                                # genome_build=input$genome_select,
-                                               clin_data = clin_var_values$clin_var_data,
+                                               clin_data = annodat,
                                                clin_data_colors = clin_var_values$clin_anno_colors,
                                                progress_func=updateProgress)
     mutsig_progress$set(value = 100, message = "Returning plot...")
@@ -488,20 +528,6 @@ shinyServer(function(input, output, session) {
     
     click("plot_generibbon")
   })
-  
-  output$genematrix_output <- renderImage({
-    validate(need(file.exists(plot_values$gene_interaction_pdf),"No plot file found."))
-    print(plot_values$gene_interaction_pdf)
-    width  <- session$clientData$output_image_width
-    height <- session$clientData$output_image_height
-    list(
-      src = plot_values$gene_interaction_pdf,
-      contentType = "image/png",
-      width = width,
-      height = height,
-      alt = "Output from maftools' somaticInteractions()"
-    )
-  },deleteFile=F)
   
   output$download_oncoplot <- downloadHandler (
     filename = function(){
