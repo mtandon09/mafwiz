@@ -12,7 +12,7 @@
   "packages": {
     "AnnotationDbi": {
       "Source": "Bioconductor",
-      "Repository": null,
+      "Repository": "https://bioconductor.org/packages/3.12/bioc/src/contrib",
       "description": {
         "Package": "AnnotationDbi",
         "Title": "Manipulation of SQLite-based annotations in Bioconductor",
@@ -65,7 +65,7 @@
     },
     "BSgenome": {
       "Source": "Bioconductor",
-      "Repository": null,
+      "Repository": "https://bioconductor.org/packages/3.12/bioc/src/contrib",
       "description": {
         "Package": "BSgenome",
         "Title": "Software infrastructure for efficient representation of full\ngenomes and their SNPs",
@@ -95,7 +95,7 @@
     },
     "Biobase": {
       "Source": "Bioconductor",
-      "Repository": null,
+      "Repository": "https://bioconductor.org/packages/3.12/bioc/src/contrib",
       "description": {
         "Package": "Biobase",
         "Title": "Biobase: Base functions for Bioconductor",
@@ -124,7 +124,7 @@
     },
     "BiocFileCache": {
       "Source": "Bioconductor",
-      "Repository": null,
+      "Repository": "https://bioconductor.org/packages/3.12/bioc/src/contrib",
       "description": {
         "Package": "BiocFileCache",
         "Title": "Manage Files Across Sessions",
@@ -156,7 +156,7 @@
     },
     "BiocGenerics": {
       "Source": "Bioconductor",
-      "Repository": null,
+      "Repository": "https://bioconductor.org/packages/3.12/bioc/src/contrib",
       "description": {
         "Package": "BiocGenerics",
         "Title": "S4 generic functions used in Bioconductor",
@@ -209,7 +209,7 @@
     },
     "BiocParallel": {
       "Source": "Bioconductor",
-      "Repository": null,
+      "Repository": "https://bioconductor.org/packages/3.12/bioc/src/contrib",
       "description": {
         "Package": "BiocParallel",
         "Type": "Package",
@@ -242,7 +242,7 @@
     },
     "Biostrings": {
       "Source": "Bioconductor",
-      "Repository": null,
+      "Repository": "https://bioconductor.org/packages/3.12/bioc/src/contrib",
       "description": {
         "Package": "Biostrings",
         "Title": "Efficient manipulation of biological strings",
@@ -298,7 +298,7 @@
     },
     "ComplexHeatmap": {
       "Source": "Bioconductor",
-      "Repository": null,
+      "Repository": "https://bioconductor.org/packages/3.12/bioc/src/contrib",
       "description": {
         "Package": "ComplexHeatmap",
         "Type": "Package",
@@ -386,7 +386,7 @@
     },
     "DelayedArray": {
       "Source": "Bioconductor",
-      "Repository": null,
+      "Repository": "https://bioconductor.org/packages/3.12/bioc/src/contrib",
       "description": {
         "Package": "DelayedArray",
         "Title": "A unified framework for working transparently with on-disk and\nin-memory array-like datasets",
@@ -417,7 +417,7 @@
     },
     "GenomeInfoDb": {
       "Source": "Bioconductor",
-      "Repository": null,
+      "Repository": "https://bioconductor.org/packages/3.12/bioc/src/contrib",
       "description": {
         "Package": "GenomeInfoDb",
         "Title": "Utilities for manipulating chromosome names, including modifying\nthem to follow a particular naming style",
@@ -448,7 +448,7 @@
     },
     "GenomeInfoDbData": {
       "Source": "Bioconductor",
-      "Repository": null,
+      "Repository": "https://bioconductor.org/packages/3.12/data/annotation/src/contrib",
       "description": {
         "Package": "GenomeInfoDbData",
         "Title": "Species and taxonomy ID look up tables used by GenomeInfoDb",
@@ -466,7 +466,7 @@
     },
     "GenomicAlignments": {
       "Source": "Bioconductor",
-      "Repository": null,
+      "Repository": "https://bioconductor.org/packages/3.12/bioc/src/contrib",
       "description": {
         "Package": "GenomicAlignments",
         "Title": "Representation and manipulation of short genomic alignments",
@@ -497,7 +497,7 @@
     },
     "GenomicFeatures": {
       "Source": "Bioconductor",
-      "Repository": null,
+      "Repository": "https://bioconductor.org/packages/3.12/bioc/src/contrib",
       "description": {
         "Package": "GenomicFeatures",
         "Title": "Conveniently import and query gene models",
@@ -527,7 +527,7 @@
     },
     "GenomicRanges": {
       "Source": "Bioconductor",
-      "Repository": null,
+      "Repository": "https://bioconductor.org/packages/3.12/bioc/src/contrib",
       "description": {
         "Package": "GenomicRanges",
         "Title": "Representation and manipulation of genomic intervals",
@@ -609,7 +609,7 @@
     },
     "IRanges": {
       "Source": "Bioconductor",
-      "Repository": null,
+      "Repository": "https://bioconductor.org/packages/3.12/bioc/src/contrib",
       "description": {
         "Package": "IRanges",
         "Title": "Foundation of integer range manipulation in Bioconductor",
@@ -701,7 +701,7 @@
     },
     "MatrixGenerics": {
       "Source": "Bioconductor",
-      "Repository": null,
+      "Repository": "https://bioconductor.org/packages/3.12/bioc/src/contrib",
       "description": {
         "Package": "MatrixGenerics",
         "Title": "S4 Generic Summary Statistic Functions that Operate on\nMatrix-Like Objects",
@@ -733,7 +733,7 @@
     },
     "MutationalPatterns": {
       "Source": "Bioconductor",
-      "Repository": null,
+      "Repository": "https://bioconductor.org/packages/3.12/bioc/src/contrib",
       "description": {
         "Package": "MutationalPatterns",
         "Type": "Package",
@@ -997,7 +997,7 @@
     },
     "Rhtslib": {
       "Source": "Bioconductor",
-      "Repository": null,
+      "Repository": "https://bioconductor.org/packages/3.12/bioc/src/contrib",
       "description": {
         "Package": "Rhtslib",
         "Title": "HTSlib high-throughput sequencing library as an R package",
@@ -1029,7 +1029,7 @@
     },
     "Rsamtools": {
       "Source": "Bioconductor",
-      "Repository": null,
+      "Repository": "https://bioconductor.org/packages/3.12/bioc/src/contrib",
       "description": {
         "Package": "Rsamtools",
         "Type": "Package",
@@ -1062,7 +1062,7 @@
     },
     "S4Vectors": {
       "Source": "Bioconductor",
-      "Repository": null,
+      "Repository": "https://bioconductor.org/packages/3.12/bioc/src/contrib",
       "description": {
         "Package": "S4Vectors",
         "Title": "Foundation of vector-like and list-like containers in\nBioconductor",
@@ -1090,7 +1090,7 @@
     },
     "SummarizedExperiment": {
       "Source": "Bioconductor",
-      "Repository": null,
+      "Repository": "https://bioconductor.org/packages/3.12/bioc/src/contrib",
       "description": {
         "Package": "SummarizedExperiment",
         "Title": "SummarizedExperiment container",
@@ -1120,7 +1120,7 @@
     },
     "TCGAbiolinks": {
       "Source": "Bioconductor",
-      "Repository": null,
+      "Repository": "https://bioconductor.org/packages/3.12/bioc/src/contrib",
       "description": {
         "Package": "TCGAbiolinks",
         "Type": "Package",
@@ -1152,7 +1152,7 @@
     },
     "TCGAbiolinksGUI.data": {
       "Source": "Bioconductor",
-      "Repository": null,
+      "Repository": "https://bioconductor.org/packages/3.12/data/experiment/src/contrib",
       "description": {
         "Package": "TCGAbiolinksGUI.data",
         "Title": "Data for the TCGAbiolinksGUI package",
@@ -1181,7 +1181,7 @@
     },
     "VariantAnnotation": {
       "Source": "Bioconductor",
-      "Repository": null,
+      "Repository": "https://bioconductor.org/packages/3.12/bioc/src/contrib",
       "description": {
         "Package": "VariantAnnotation",
         "Type": "Package",
@@ -1236,7 +1236,7 @@
     },
     "XVector": {
       "Source": "Bioconductor",
-      "Repository": null,
+      "Repository": "https://bioconductor.org/packages/3.12/bioc/src/contrib",
       "description": {
         "Package": "XVector",
         "Title": "Foundation of external vector representation and manipulation in\nBioconductor",
@@ -1361,7 +1361,7 @@
     },
     "biomaRt": {
       "Source": "Bioconductor",
-      "Repository": null,
+      "Repository": "https://bioconductor.org/packages/3.12/bioc/src/contrib",
       "description": {
         "Package": "biomaRt",
         "Version": "2.46.3",
@@ -3055,7 +3055,7 @@
     },
     "maftools": {
       "Source": "Bioconductor",
-      "Repository": null,
+      "Repository": "https://bioconductor.org/packages/3.12/bioc/src/contrib",
       "description": {
         "Package": "maftools",
         "Type": "Package",
@@ -3351,6 +3351,33 @@
         "Repository": "CRAN",
         "Date/Publication": "2021-12-14 14:20:06 UTC",
         "Built": "R 4.0.5; x86_64-pc-linux-gnu; 2022-03-04 19:03:51 UTC; unix"
+      }
+    },
+    "packrat": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com/",
+      "description": {
+        "Package": "packrat",
+        "Type": "Package",
+        "Title": "A Dependency Management System for Projects and their R Package\nDependencies",
+        "Version": "0.7.0",
+        "Author": "Kevin Ushey, Jonathan McPherson, Joe Cheng, Aron Atkins, JJ Allaire",
+        "Maintainer": "Aron Atkins <aron@rstudio.com>",
+        "Description": "Manage the R packages your project depends\n    on in an isolated, portable, and reproducible way.",
+        "License": "GPL-2",
+        "Depends": "R (>= 3.0.0)",
+        "Imports": "tools, utils",
+        "Suggests": "testthat (>= 3.0.0), devtools, httr, knitr, rmarkdown",
+        "URL": "https://github.com/rstudio/packrat/",
+        "BugReports": "https://github.com/rstudio/packrat/issues",
+        "RoxygenNote": "7.1.1",
+        "Encoding": "UTF-8",
+        "Config/testthat/edition": "3",
+        "NeedsCompilation": "no",
+        "Packaged": "2021-08-19 20:08:05 UTC; aron",
+        "Repository": "CRAN",
+        "Date/Publication": "2021-08-20 15:20:02 UTC",
+        "Built": "R 4.0.5; ; 2022-03-04 20:14:34 UTC; unix"
       }
     },
     "pillar": {
@@ -3865,9 +3892,61 @@
         "Built": "R 4.0.5; ; 2022-03-04 18:55:13 UTC; unix"
       }
     },
+    "rsconnect": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com/",
+      "description": {
+        "Package": "rsconnect",
+        "Type": "Package",
+        "Title": "Deployment Interface for R Markdown Documents and Shiny\nApplications",
+        "Version": "0.8.25",
+        "Authors@R": "c(\n    person(\"Aron\", \"Atkins\", role = c(\"aut\", \"cre\"), email = \"aron@rstudio.com\"),\n    person(\"Jonathan\", \"McPherson\", role = \"aut\", email = \"jonathan@rstudio.com\"),\n    person(\"JJ\", \"Allaire\", role = \"aut\"),\n    person(\"RStudio\", role = c(\"cph\", \"fnd\"))\n    )",
+        "Description": "Programmatic deployment interface for 'RPubs', 'shinyapps.io', and\n    'RStudio Connect'. Supported content types include R Markdown documents,\n    Shiny applications, Plumber APIs, plots, and static web content.",
+        "Depends": "R (>= 3.0.0)",
+        "Imports": "curl, digest, jsonlite, openssl, packrat (>= 0.6), rstudioapi\n(>= 0.5), tools, yaml (>= 2.1.5)",
+        "Suggests": "RCurl, callr, httpuv, knitr, plumber (>= 0.3.2), reticulate,\nrmarkdown (>= 1.1), shiny, sourcetools, testthat, xtable",
+        "License": "GPL-2",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.1.2",
+        "URL": "https://github.com/rstudio/rsconnect",
+        "BugReports": "https://github.com/rstudio/rsconnect/issues",
+        "NeedsCompilation": "no",
+        "Packaged": "2021-11-16 14:35:24 UTC; aron",
+        "Author": "Aron Atkins [aut, cre],\n  Jonathan McPherson [aut],\n  JJ Allaire [aut],\n  RStudio [cph, fnd]",
+        "Maintainer": "Aron Atkins <aron@rstudio.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2021-11-19 07:30:10 UTC",
+        "Built": "R 4.0.5; ; 2022-03-04 20:14:44 UTC; unix"
+      }
+    },
+    "rstudioapi": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com/",
+      "description": {
+        "Package": "rstudioapi",
+        "Title": "Safely Access the RStudio API",
+        "Description": "Access the RStudio API (if available) and provide informative error\n    messages when it's not.",
+        "Version": "0.13",
+        "Authors@R": "c(\n    person(\"Kevin\", \"Ushey\", role = c(\"aut\", \"cre\"), email = \"kevin@rstudio.com\"),\n    person(\"JJ\", \"Allaire\", role = c(\"aut\"), email = \"jj@rstudio.com\"),\n    person(\"Hadley\", \"Wickham\", role = c(\"aut\"), email = \"hadley@rstudio.com\"),\n    person(\"Gary\", \"Ritchie\", role = c(\"aut\"), email = \"gary@rstudio.com\"),\n    person(family = \"RStudio\", role = \"cph\")\n    )",
+        "Maintainer": "Kevin Ushey <kevin@rstudio.com>",
+        "License": "MIT + file LICENSE",
+        "URL": "https://github.com/rstudio/rstudioapi",
+        "BugReports": "https://github.com/rstudio/rstudioapi/issues",
+        "RoxygenNote": "7.1.1",
+        "Suggests": "testthat, knitr, rmarkdown, clipr",
+        "VignetteBuilder": "knitr",
+        "Encoding": "UTF-8",
+        "NeedsCompilation": "no",
+        "Packaged": "2020-11-11 23:34:30 UTC; kevinushey",
+        "Author": "Kevin Ushey [aut, cre],\n  JJ Allaire [aut],\n  Hadley Wickham [aut],\n  Gary Ritchie [aut],\n  RStudio [cph]",
+        "Repository": "CRAN",
+        "Date/Publication": "2020-11-12 21:50:02 UTC",
+        "Built": "R 4.0.5; ; 2022-03-04 19:20:15 UTC; unix"
+      }
+    },
     "rtracklayer": {
       "Source": "Bioconductor",
-      "Repository": null,
+      "Repository": "https://bioconductor.org/packages/3.12/bioc/src/contrib",
       "description": {
         "Package": "rtracklayer",
         "Title": "R interface to genome annotation files and the UCSC genome\nbrowser",
@@ -4806,7 +4885,7 @@
     },
     "zlibbioc": {
       "Source": "Bioconductor",
-      "Repository": null,
+      "Repository": "https://bioconductor.org/packages/3.12/bioc/src/contrib",
       "description": {
         "Package": "zlibbioc",
         "Type": "Package",
@@ -4906,6 +4985,9 @@
     },
     "LICENSE": {
       "checksum": "670407bfd02ae7a98d79df5b578c0808"
+    },
+    "make_manifest.R": {
+      "checksum": "ac8bb89eaba0ae1e3bc399fd09a01e2b"
     },
     "README.md": {
       "checksum": "64b82058a12f165ea6a1172eddd3ed31"
