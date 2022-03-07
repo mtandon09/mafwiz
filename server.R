@@ -34,7 +34,7 @@ source("helper_functions.shiny.R")
 ## Increase upload limit
 max_upload_gb=1
 options(shiny.maxRequestSize=(max_upload_gb*1000)*1024^2) 
-
+shinyOptions(cache = cachem::cache_disk("./app_cache/cache/"))
 
 shinyServer(function(input, output, session) {
     
